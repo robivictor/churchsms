@@ -8,7 +8,7 @@ The web interface:
 
 1. Create a database on MsSQL server and with the name church_sms
 2. Run the script found inside 'resources'/database_script.sql on this database
-3. Change the database name inside the web.confing file found inside the folder 'Web' 
+3. Update the connection string inside the web.confing file found inside the folder 'Web'. 
 4. Set the web as a startup project and launch it from with in Visual studio.
 5. Use the following user: 
    username: admin
