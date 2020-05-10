@@ -1,0 +1,263 @@
+﻿@model IEnumerable<DataModels.Models.User>
+
+@{
+    ViewBag.Title = "Contacts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        <i class="fa fa-users"></i> Members
+        <small>Manage Contacts</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Create", "Contacts")"><span class="fa fa-plus-circle"></span>&nbsp;Add</a>
+    <a class="btn btn-default" href="@Url.Action("Groups", "Contacts")"><span class="fa fa-group"></span>&nbsp;Manage Groups</a>
+}
+
+<div ng-app="myApp" ng-controller="contactController" class="box box-primary">
+    <div class="box-body table-responsive table-condensed">
+        <table id="contacts" @*datatable=""*@ class="table table-hover table-condensed table-responsive">
+            <thead class="bg-orange">
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Name)
+
+                    </th>
+                    @*<th>Reference</th>*@
+                    <th>
+                        Gender
+                    </th>
+                    <th>
+                        Phone Number
+                        @* @Html.DisplayNameFor(model => model.PhoneNumber)*@
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.UsersStatu.Description)*@
+                        Status
+                    </th>
+                    @*<th>
+
+                        About
+                    </th>*@
+                    @*<th>
+                        @Html.DisplayNameFor(model => model.Group)
+                    </th>*@
+                    @*@if (User.IsInRole("Admin"))  {}*@
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <a class="" href="@Url.Action("Edit",new{id=@item.UserId})">
+                            <b>@item.Name @item.MiddleName</b>
+                        </a>
+                        <div>
+                            <p style="margin:2px"><small style="color: #BAB8B8" class="text-muted"><i class="fa fa-user"></i> @item.ReferenceID </small></p>
+                        </div>
+                    </td>
+                    @*<td>
+                        @item.ReferenceID
+                    </td>*@
+                    <td class="dt-body-nowrap">
+                        @if ((bool)item.IsMale)
+                        {
+                            <p> <i class="fa fa-male fa-lg text-primary"></i> Male</p>
+                        }
+                        else
+                        {
+                            <p><i class="fa fa-female fa-lg"></i> Female</p>
+                        }
+
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PhoneNumber)
+                    </td>
+                    <td style="text-align: left">
+                        @switch (item.Status)
+                        {
+                            case 1:
+                                <div class="label label-success">
+                                    @Html.DisplayFor(modelItem => item.UsersStatu.Description)
+                                </div>
+                                break;
+                            default:
+                            <div class="label label-default">
+                                @Html.DisplayFor(modelItem => item.UsersStatu.Description)
+                            </div>
+                                break;
+                        }
+                    </td>
+                    @*<td style="text-align: left">
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>*@
+                    @*<td>
+                        @if (item.GroupID == null)
+                        {<p>Not Assigned</p>}
+                        else
+                        {
+                            @Html.DisplayFor(modelItem => item.Group.GroupName)
+                        }
+                    </td>*@
+
+                    <td class="dt-body-nowrap">
+                        @*<a class="btn btn-xs btn-default " href="@Url.Action("Edit", "Contacts", new { id = item.UserId })"><i class="fa fa-edit"></i>Edit</a>*@
+                        @* <a class = "btn btn-sm btn-default "  href="@Url.Action("Details", "Contacts", new { id = item.UserId })"><i class="fa fa-dashboard"></i>Details</a>*@
+                        @*<a class="btn btn-sm btn-danger " href="@Url.Action("Delete", "Contacts", new { id = item.UserId })"><i class="fa fa-minus-circle "></i>Delete</a>*@
+                        @*@if (item.Status == 2)
+                        {
+                            <a class="btn btn-xs btn-success " ng-click="enable_contact(@item.UserId)">Enable</a>
+                        }
+                        else if (item.Status == 3)
+                        {
+                            <a class="btn btn-xs btn-primary " ng-click="approve_contact(@item.UserId)">Approve</a>
+                        }
+                        else if (item.Status == 1)
+                        {
+                            <a class="btn btn-xs btn-danger " ng-click="disable_contact(@item.UserId)">Disable</a>
+                        }*@
+                        <a class="btn btn-xs btn-default " ng-click="delete_contact($event,@item.UserId)">Delete</a>
+                        <a class="btn btn-xs btn-default " href="@Url.Action("MessageHistory", "Contacts", new { id = item.UserId })"><i class="fa fa-envelope"></i>&nbsp;SMS</a>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#contacts').DataTable({
+            stateSave: true,
+            //"initComplete": function () {
+            //    alert('DataTables has finished its initialisation.');
+            //}
+            });
+    });
+</script>
+
+<script>
+    var myApp = angular.module('myApp', ['datatables']);
+
+    myApp.controller('contactController', [
+        '$scope', '$http', function ($scope, $http) {
+            $scope.disable_contact = function (item) {
+                bootbox.dialog({
+                    message: "Are you sure you want disable this user? Disabling a contact prevents the contact from full system access.",
+                    title: "Confirm to Disable",
+                    buttons: {
+                        danger: {
+                            label: "Disable",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("Disable", "Contacts")", { id: item });
+                                var table = $('#contacts').DataTable();
+                                //table.draw();
+                                //wind.reload(true);
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+
+            $scope.delete_contact = function ($event, item) {
+                var table = $('#contacts').DataTable();
+                var cur = $(event.target).parent().parent();
+
+                bootbox.dialog({
+                    message: "Are you sure you want delete this user? Deleting a contact will also delete all realted information to the user.",
+                    title: "Confirm to Delete",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("Delete", "Contacts")", { id: item }).success(function () {
+                                    //alert(cur.html());
+                                    table.row(cur).remove().draw();
+                                });
+
+                                //var table = $('#contacts').DataTable();
+                                //table.draw();
+                                //window.location = "@Url.Action("Index","Contacts")";
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+
+            $scope.enable_contact = function (item) {
+                bootbox.dialog({
+                    message: "You are about to enable this contact.Are you sure of that?",
+                    title: "Confirm to Enable",
+                    buttons: {
+                        danger: {
+                            label: "Enable",
+                            className: "btn-success",
+                            callback: function () {
+                                $http.post("@Url.Action("Enable", "Contacts")", { id: item });
+                                var table = $('#contacts').DataTable();
+                                //table.draw();
+                                //$route.reload();
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+            $scope.approve_contact = function (item) {
+                bootbox.dialog({
+                    message: "You are about to approve this contact.Are you sure of that?",
+                    title: "Confirm to Approve",
+                    buttons: {
+                        danger: {
+                            label: "Approve",
+                            className: "btn-primary",
+                            callback: function () {
+                                $http.post("@Url.Action("Approve", "Contacts")", { id: item });
+                                var table = $('#contacts').DataTable();
+                                //table.draw();
+                                //$route.reload();
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+        }]);
+</script>
+
+@*<script type="text/javascript">
+        $(function () {
+            $("[data-mask]").inputmask();
+        });
+    </script>*@

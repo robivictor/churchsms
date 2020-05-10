@@ -1,0 +1,432 @@
+﻿@model DataModels.Models.Group
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        @Model.GroupName
+        <small>Detail</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Groups", "Contacts")"><i class="fa fa-list"></i>&nbsp;Groups</a>
+    <a class="btn btn-default" href="@Url.Action("Edit", "Groups", new { id = Model.GroupID })"><i class="fa fa-edit"></i>&nbsp;Edit</a>
+    <a class="btn btn-default" data-toggle="modal" data-target="#add-member-modal"><i class="fa fa-plus-circle"></i>&nbsp;Add member(s)</a>
+    <a class="btn btn-default" data-toggle="modal" data-target="#groupsms-modal"><i class="fa fa-envelope"></i>&nbsp;SMS</a>
+    
+}
+
+
+<div ng-app="myApp" ng-controller="membersController">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-body">
+
+                    <table class="table table-condensed">
+                        <tbody>
+                            <tr>
+                                <td>Group Name</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.GroupName)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Members</td>
+                                <td>
+                                    <p style="margin: 0 0 0px" id="countm" class="badge bg-green">@Model.UserGroups.Count</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Group Leader</td>
+                                <td>
+                                    <div ng-show="(leader).ID!=0" class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-primary">{{leader.Name}} {{leader.Phone}}</button>
+                                        <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                            <span class="caret"></span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a href="#"><i class="fa fa-envelope"></i>&nbsp;Send message</a></li>
+                                            <li><a href="#">Change Leader</a></li>
+                                            <li><a href="#">Demote</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>About</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Description)
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+
+            <div class="btn-group" ng-hide="unaddedTags.length==0">
+                <button type="button" class="" multi-select
+                        input-model="unaddedTags"
+                        button-label="Name"
+                        item-label="Name"
+                        tick-property="Selected"
+                        selection-mode="multiple"
+                        max-labels="0"
+                        default-label="Tags"
+                        max-height="180px"></button>
+                <button type="button" class="btn btn-default pull-right" ng-click="Bind()"><span class="fa fa-tag"></span>Tag</button>
+            </div>
+            @*<button type="button" class="multiSelect" ng-click="Bind()">Add Tags</button>*@
+            <div>
+                <div ng-repeat="t in Tags" class="btn-group" style="margin: 2px">
+                    <button class="btn btn-success btn-sm" ng-click="GroupDetail(g)">
+                        {{t.TagName}}
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" ng-click="remove(t)"><span class="fa fa-times-circle"></span></button>
+                </div>
+            </div>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><b>Group Members <span id="count" class="badge bg-green">@Model.UserGroups.Count</span></b></h3>
+                    <div class="box-tools">
+                        <div class="pull-right">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body table-responsive table-condensed" style="padding-top: 5px">
+                    <table id="groupmembers" class="table table-hover table-condensed table-responsive">
+                        <thead class="bg-orange">
+                            <tr>
+                                @*<th></th>*@
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Phone
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in Model.UserGroups)
+                        {
+                            <tr>
+                                @*<td></td>*@
+                                <td>
+                                    <a class="" href="@Url.Action("Edit","Contacts",new{id=@item.UserID})">@Html.DisplayFor(modelItem => item.User.Name)</a>
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.User.PhoneNumber)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.GroupRole.Role)
+                                </td>
+                                <td class="dt-body-nowrap">
+                                    <a class="btn btn-xs btn-default" ng-click="remove_member($event,@item.User.UserId,@Model.GroupID)"><i class="fa fa-trash-o"></i>&nbsp;Remove</a>
+                                    <a class="btn btn-xs btn-default " href="@Url.Action("MessageHistory", "Contacts", new { id = item.UserID })"><i class="fa fa-envelope"></i></a>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="add-member-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-user"></i>&nbsp;Add member</h4>
+                </div>
+                <form name="addmembers" ng-submit="submitForm(addmembers.$valid)" novalidate>
+                    <div class="modal-body">
+                        <div multi-select
+                             input-model="unaddedMembers"
+                             button-label="Name"
+                             item-label="Name"
+                             tick-property="Selected"
+                             selection-mode="multiple"
+                             max-labels="10"
+                             default-label="<span class='fa fa-plus-circle'><span> Add contact"
+                             max-height="180px">
+                        </div>
+                        @*<div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Select Contact</span>
+                                    @Html.DropDownList("UserId", null, null, new { @class = "form-control" })
+                                </div>
+                            </div>*@
+
+                        @*<input name="GroupID" hidden="" value="@Model.GroupID" />*@
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="submit" class="btn btn-primary" ng-disabled="addmembers.$invalid">Add</button>
+                        <button type="button" class="btn btn-danger pull-right" data-dismiss="modal"><i class="fa fa-times"></i>Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="groupsms-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-envelope-o"></i>Group SMS</h4>
+                </div>
+                <form action="@Url.Action("GroupSms", "Messages", new { groupId=Model.GroupID})" method="post">
+                    <div class="modal-body">
+
+                        <div class="form-group">
+                            <textarea name="msgBody" class="form-control" ng-trim="false" ng-model="msg" maxlength="160" placeholder="Message" style="height: 120px; font-size: 15px"></textarea>
+                            <div class="box-footer">
+                                <h4 class="label label-danger">{{160-msg.length}}</h4>
+                            </div>
+                        </div>
+
+                        <p>@Model.UserGroups.Count people will receieve this message</p>
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i>Discard</button>
+                        <button type="submit" class="btn btn-primary pull-left"><i class="fa fa-envelope"></i>Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    $(document).ready(function () {
+        $('#groupmembers').DataTable({
+            stateSave: true
+        });
+
+        $(".checkBoxContainer").slimscroll({
+            height: "150px",
+            alwaysVisible: false,
+            size: "8px"
+        }).css("width", "100%");
+    });
+</script>
+
+<script>
+    var myApp = angular.module('myApp', ['multi-select']);
+    var group = '@Model.GroupID';
+    myApp.controller('membersController', [
+        '$scope', '$http', function ($scope, $http) {
+
+            $scope.unaddedMembers = [];
+            $scope.toBeAddedcontacts = [];
+
+            $scope.unaddedTags = [];
+            $scope.toBeAddedTags = [];
+            $scope.Tags = [];
+
+            $scope.getTags = function () {
+                $http.post("@Url.Action("GetTags", "Data")", { groupId: group }).success(function (data) {
+                    $scope.Tags = data;
+                }).error(function () {
+                    $scope.Tags = null;
+                });
+            }
+
+            $scope.getTags();
+            $scope.leader = '';
+
+            $scope.getLeader = function () {
+                $http.post("@Url.Action("GetGroupLeader", "Data")", { groupId: group }).success(function (data) {
+                    $scope.leader = data;
+                }).error(function () {
+                    $scope.leader = null;
+                });
+            }
+
+            $scope.getLeader();
+
+
+            $scope.getUnaddedMembers = function () {
+                $http.post("@Url.Action("GetUnaddedContacts", "Data")", { groupId: group }).success(function (data) {
+                    $scope.unaddedMembers = data;
+                }).error(function () {
+                    //alert("Error!");
+                });
+                //alert("Error!");
+            }
+
+            $scope.getUnaddedMembers();
+
+            $scope.getUnaddedTags = function () {
+                $http.post("@Url.Action("GetUnaddedTags", "Data")", { groupId: group }).success(function (data) {
+                    $scope.unaddedTags = data;
+                }).error(function () {
+                    //alert("Error!");
+                });
+                //alert("Error!");
+            }
+            $scope.getUnaddedTags();
+
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "progressBar": false,
+                "positionClass": "toast-bottom-right",
+                "onclick": null,
+                "showDuration": "200",
+                "hideDuration": "500",
+                "timeOut": "2000",
+                "extendedTimeOut": "100",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+
+            $scope.submitForm = function (isValid) {
+
+                // check to make sure the form is completely valid
+                if (isValid) {
+                    var s = "";
+
+                    angular.forEach($scope.unaddedMembers, function (value, key) {
+                        if (value.Selected == true) {
+                            s = s + value.Name + " id:" + value.ID + "\r\n";
+                            $scope.toBeAddedcontacts.push(value);
+                        }
+                    });
+
+
+
+                    //alert(s);
+                    //toastr.success($scope.selectedcontacts.Name);
+                    //toastr.success('Thank you for requesting.<br/> We will get back to you soon.');
+                    $http.post("@Url.Action("Add", "Data")", { tobeadded: $scope.toBeAddedcontacts, groupid: group }).success(function () {
+
+                        toastr.success('You have added ' + $scope.toBeAddedcontacts.length + ' new contacts to this group.');
+                        $('#add-member-modal').modal('hide');
+                        //window.location = "@Url.Action("Details", "Groups")";
+
+                        //ocation.path().search('activetab':'2');
+                        //$scope.registerForm.$pristine = true;
+                        //$scope.registerForm.$submitted = false;
+                        //$scope.registerForm.$setPristine(true);
+
+                    }).error(function () {
+                        toastr.error("An error occured, try again!");
+                    });
+                }
+            };
+
+            $scope.Bind = function () {
+
+                angular.forEach($scope.unaddedTags, function (value, key) {
+                    if (value.Selected == true) {
+                        $scope.toBeAddedTags.push(value);
+                    }
+                });
+
+                $http.post("@Url.Action("Bind", "Data")", { tobeadded: $scope.toBeAddedTags, groupid: group }).success(function () {
+
+                    $scope.getUnaddedTags();
+                    $scope.getTags();
+                    $scope.toBeAddedTags = [];
+                    toastr.success('You have tagged this group with ' + $scope.toBeAddedTags.length + ' tags.');
+
+                }).error(function () {
+                    toastr.error("An error occured, try again!");
+                });
+                //}
+            };
+            $scope.remove = function (tag) {
+                //var table = $('#groupmembers').DataTable();
+                //var cur = $(event.target).parent().parent();
+                //toastr.error("An error occured, try again!" + group.ID);
+
+                $http.post("@Url.Action("Remove", "Data")", { groupId: group, id: tag.TagId }).success(function () {
+                    $scope.getUnaddedTags();
+                    $scope.getTags();
+                    toastr.success('You just untaged ' + tag.TageName + 'from this group .');
+                }).error(function () {
+                    toastr.error('Error Removing ' + tag.TageName + '.');
+                });
+
+                //bootbox.dialog({
+                //    message: "Are you sure you want untag  " + tag.TagName + "from this group?",
+                //    title: "Confirm to untag",
+                //    buttons: {
+                //        danger: {
+                //            label: "Untag",
+                //            className: "btn-danger",
+                //            callback: function () {
+                               
+                //            }
+                //        },
+                //        main: {
+                //            label: "Cancel",
+                //            className: "btn-default",
+                //            callback: function () {
+
+                //            }
+                //        }
+                //    }
+                //});
+            };
+
+            $scope.remove_member = function ($event, item, group) {
+                var table = $('#groupmembers').DataTable();
+                var cur = $(event.target).parent().parent();
+                bootbox.dialog({
+                    message: "Are you sure you want remove this member from the group?",
+                    title: "Confirm to remove",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("Remove", "Groups")", { groupId: group, id: item }).success(function () {
+                                    $scope.getUnaddedMembers();
+                                    $scope.getLeader();
+                                    table.row(cur).remove().draw();
+                                    toastr.success('You just removed a contact from this group.');
+                                    //alert(table.data().length);
+                                    $('#count').text(table.data().length);
+                                    $('#countm').text(table.data().length);
+
+                                });
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+        }]);
+
+</script>

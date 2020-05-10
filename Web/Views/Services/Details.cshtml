@@ -1,0 +1,184 @@
+﻿@model DataModels.Models.ServiceCode
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+
+    <h1>
+        @Model.Service
+        <small>Detail</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Index", "Services")"><i class="fa fa-list"></i>&nbsp;Services</a>
+    <a class="btn btn-default" href="@Url.Action("Edit", "Services", new { id = Model.ServiceCodeID })"><i class="fa fa-edit"></i>&nbsp;Edit</a>
+}
+
+<div ng-app="myApp" ng-controller="ServiceRequestsController">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-body">
+
+                    <table class="table table-condensed">
+                        <tbody>
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.Service)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Service)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Code</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Code)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Response</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Response)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="small-box bg-orange">
+                <div class="inner">
+                    <h3 id="count">
+                        @Model.ServiceRequests.Count
+                    </h3>
+                    <p>
+                        People requested
+                    </p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-person-add"></i>
+                </div>
+                <a href="#" class="small-box-footer">
+                    More info <i class="fa fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><b>Service Requests <span id="countm" class="badge bg-green">@Model.ServiceRequests.Count</span></b></h3>
+                    <div class="box-tools">
+                        <div class="pull-right">
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body" style="padding-top: 5px">
+                    <table id="servicerequests" class="table table-hover table-condensed">
+                        <thead class="bg-orange">
+                            <tr>
+                                <th></th>
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Phone
+                                </th>
+                                <th>
+                                    Time
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in Model.ServiceRequests)
+                        {
+
+                            <tr>
+                                <td></td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.RequestFromName)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.RequestFromNumber)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.RequestTime)
+                                </td>
+                                <td>
+                                    <a class="btn btn-xs btn-default" ng-click="remove_request($event,@item.ServiceRequestID)"><i class="fa fa-trash-o"></i>&nbsp;Remove</a>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#servicerequests').DataTable({
+            stateSave: true
+        });
+    });
+</script>
+
+<script>
+    var myApp = angular.module('myApp', []);
+    myApp.controller('ServiceRequestsController', [
+        '$scope', '$http', function ($scope, $http) {
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "progressBar": false,
+                "positionClass": "toast-bottom-right",
+                "onclick": null,
+                "showDuration": "200",
+                "hideDuration": "500",
+                "timeOut": "2000",
+                "extendedTimeOut": "100",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+            $scope.remove_request = function ($event, item, group) {
+                var table = $('#servicerequests').DataTable();
+                var cur = $(event.target).parent().parent();
+                bootbox.dialog({
+                    message: "This will remove the log of this request from the system are you sure you want to do it?",
+                    title: "Confirm to remove",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("RemoveRequest", "Services")", { id: item }).success(function () {
+                                    table.row(cur).remove().draw();
+                                    toastr.info('You just removed someone\'s service request.');
+                                    $('#count').text(table.data().length);
+                                    $('#countm').text(table.data().length);
+                                }).error(function () {
+                                    toastr.error('Can not remove this item');
+                                });
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                            }
+                        }
+                    }
+                });
+            };
+        }]);
+</script>

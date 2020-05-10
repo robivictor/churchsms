@@ -1,0 +1,128 @@
+﻿@model IEnumerable<DataModels.Models.ServiceCode>
+@{
+    ViewBag.Title = "Services";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Services
+        <small>Manage Service Codes</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Create", "Services")"><i class="fa fa-plus-circle"></i>&nbsp;Add Service</a>
+}
+
+<div  ng-app="" ng-controller="CodesController" class="box box-primary">
+    <div class="box-header">
+        <h3 class="box-title"></h3>
+
+        <div class="box-tools">
+            <div class="pull-left">
+               
+            </div>
+        </div>
+    </div>
+
+    <div class="box-body table-responsive table-condensed">
+        <table id="contacts" class="table table-hover table-condensed table-responsive">
+            <thead class="bg-orange">
+                <tr>
+                    <th>
+                      Code
+                    </th>
+                    <th>
+                      Service
+                    </th>
+                    <th>
+                      Response
+                    </th>
+                    <th>
+                      Reply
+                    </th>
+                    <th>
+                      Active
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="keyCode"> @Html.DisplayFor(modelItem => item.Code)</div> 
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Service)
+                    </td>
+                    <td style="width: 30%">
+                        <div class="messageout">
+                            @Html.DisplayFor(modelItem => item.Response)
+                        </div>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.AutoReply)
+                        @*<input class ="active" type="checkbox" checked="" data-size="mini"/>*@
+                       @* <input checked="checked" class="check-box" disabled="disabled" type="checkbox" style="position: absolute; opacity: 0;">*@
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Active)
+                    </td>
+                    <td style="width: 20%">
+                        <a class="btn btn-sm btn-default " href="@Url.Action("Details", "Services", new { id = item.ServiceCodeID })"> <span class="badge bg-light-blue">@item.ServiceRequests.Count</span> Details</a>
+                        <a class="btn btn-sm btn-default " href="@Url.Action("Edit", "Services", new { id = item.ServiceCodeID })">Edit</a>
+                        @if (item.Type != 1)
+                        {
+                            <a class="btn btn-sm btn-default " ng-click="delete_service($event,@item.ServiceCodeID)">Delete</a>
+                        }
+
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<script>
+    function CodesController($scope, $http) {
+       
+        var options = {
+            size: 'mini'
+        }
+        //$(".check-box").bootstrapSwitch(options);
+        //$(".icheckbox_minimal").bootstrapSwitch(options);
+        
+        $scope.delete_service = function ($event,item) {
+            //alert($event.parent());
+            //var cuRow = $event.parent();
+            //alert($(event.target).parent().parent().parent());
+            var cur = $(event.target).parent().parent();
+            bootbox.dialog({
+                message: "Are you sure you want delete this Service?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("Delete", "Services")", { id: item}).success(function() {
+                                //alert(cur.html());
+                                cur.remove();
+                            });
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+        };
+    }
+</script>
+

@@ -1,0 +1,177 @@
+﻿@using Microsoft.AspNet.Identity
+@model IEnumerable<DataModels.ViewModels.UserAccountViewModel>
+
+@{
+    ViewBag.Title = "Accounts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Contacts
+        <small>Manage User Accounts</small>
+    </h1>
+}
+
+@section actions {
+   <a class="btn btn-default" href="@Url.Action("Register", "Account")"><span class="fa fa-plus-circle"></span>&nbsp;New Account</a>
+}
+
+<div ng-app="" ng-controller="AccountController" class="box box-primary">
+   <div class="box-body table-responsive table-condensed">
+        <table id="accounts" class="table table-hover table-condensed">
+            <thead class="bg-orange">
+                <tr>
+                    <th></th>
+                    <th>
+                        User Name
+                    </th>
+                    @*<th>
+                            Created Date
+                        </th>*@
+                    <th>
+                        Role
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var item in Model)
+            {
+                
+                <tr>
+                    <td class="small-col">
+                        <input type="checkbox" />
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserName)
+                    </td>
+                    <td style="text-align: left">
+                        @{
+                            if (item.IsAdmin)
+                            {
+                                <h4 class="label label-success">Administrator</h4>
+                            }
+                            else
+                            {
+                                <p class="label label-default">Registered</p>
+                            }
+                        }
+                    </td>
+                    <td>
+                        
+                        @{
+                            if (!item.IsCurrent)
+                            {
+                                <a class="btn btn-sm btn-danger " ng-click="delete_contact($event,'@item.UserName')"><i class="fa fa-minus-circle "></i>&nbsp;Delete</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-sm btn-danger disabled" ng-click="delete_contact($event,'@item.UserName')"><i class="fa fa-minus-circle "></i>&nbsp;Delete</a>
+                            }
+
+                            if (item.IsAdmin)
+                            {
+                                if (!item.IsCurrent)
+                                {
+                                    <a class="btn btn-sm btn-default " ng-click="change_role($event,'@item.UserName')"><i class="fa fa-fire "></i>&nbsp;Remove Admin</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-sm btn-default disabled" ng-click="change_role($event,'@item.UserName')"><i class="fa fa-fire "></i>&nbsp;Remove Admin</a>
+                                }
+                            }
+                            else if (!item.IsAdmin)
+                            {
+                                if (!item.IsCurrent)
+                                {
+                                    <a class="btn btn-sm btn-default " ng-click="change_role($event,'@item.UserName')"><i class="fa fa-fire "></i>&nbsp;Make Admin</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-sm btn-default disabled" ng-click="change_role($event,'@item.UserName')"><i class="fa fa-fire "></i>&nbsp;Make Admin</a>
+                                }
+                                
+                            }
+                        }
+                    </td>
+                </tr>
+                
+            }
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#accounts').DataTable({
+            stateSave: true
+        });
+    });
+</script>
+
+
+<script>
+    function AccountController($scope, $http, $window) {
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-right",
+            "onclick": null,
+            "showDuration": "200",
+            "hideDuration": "500",
+            "timeOut": "2000",
+            "extendedTimeOut": "100",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        $scope.change_role = function ($event, item) {
+
+            var table = $('#accounts').DataTable();
+            var cur = $(event.target).parent().parent();
+
+            $http.post("@Url.Action("RoleChanger", "Settings")", { username: item }).success(function () {
+                //table.row(cur).remove().draw();
+                toastr.info("Role Changed");
+                $window.location.reload();
+            }).error(function () {
+                toastr.error("Error occured");
+            });
+
+        };
+
+        $scope.delete_contact = function ($event, item) {
+
+            var table = $('#accounts').DataTable();
+            var cur = $(event.target).parent().parent();
+
+            bootbox.dialog({
+                message: "Are you sure you want delete this user?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            //toastr.error(item);
+                            $http.post("@Url.Action("DeleteAccount", "Settings")", { username: item }).success(function () {
+                                table.row(cur).remove().draw();
+                            }).error(function () {
+                                toastr.error("Error occured");
+                            });
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+
+                        }
+                    }
+                }
+            });
+        };
+    }
+</script>

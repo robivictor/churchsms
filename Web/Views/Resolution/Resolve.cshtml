@@ -1,0 +1,299 @@
+﻿@using DataModels.Models
+@model DataModels.Models.Resolution
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .chartWrap {
+        margin: 0 auto;
+        width: 100%;
+        height: 186px;
+    }
+</style>
+
+@section header {
+    <h1>
+        Resolve
+        <small>@Model.Survey.SurveyName</small>
+    </h1>
+}
+<div ng-app>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-body" style="height: 200px;">
+                    <p>Recieved Message from <b>@Model.User.Name</b></p>
+                    <textarea name="msg" class="form-control" style="height: 100px;" disabled="">@Model.message</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><b>Assign Answers <span class="badge bg-green">@ViewBag.Qty</span></b></h3>
+                    <div class="box-tools">
+                        <div class="pull-right">
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body" style="padding-top: 0px">
+
+                    @using (Html.BeginForm("Resolve", "Resolution", FormMethod.Post))
+                    {
+                        var i = 0;
+                        <input class="hide" type="text" name="ResolutionID" value="@Model.ResolutionID" />
+
+                        //<input type=”text” name=”Foobars[0].Buzz” value=”Testvalue” />
+
+                        @*<input type=”text” name=”Foobars[0].Foo” value=”123123″ />
+
+                            <input type=”text” name=”Foobars[1].Buzz” value=”Testvalue” />
+
+                            <input type=”text” name=”Foobars[1].Foo” value=”123123″ />
+
+                            <input type=”text” name=”Foobars[2].Buzz” value=”Testvalue” />
+
+                            <input type=”text” name=”Foobars[2].Foo” value=”123123″ />
+
+                            <input type=”text” name=”Foobars[3].Buzz” value=”Testvalue” />
+
+                            <input type=”text” name=”Foobars[3].Foo” value=”123123″ />
+
+                            <input type=”text” name=”Foobars[3].Children[0].Buzz” value=”KIND!” />
+
+                            <input type=”text” name=”Foobars[3].Children[0].Foo” value=”123123″ />*@
+
+                        <table class="table table-hover table-condensed">
+                            <thead class="bg-orange">
+                                <tr>
+                                    <th></th>
+                                    @*  <th>ID
+                                        </th>*@
+                                    <th>
+                                        Question
+                                    </th>
+                                    @* <th>Type
+                                        </th>*@
+                                    <th>
+                                        Answer
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            @foreach (var item in (List<Question>)ViewData["Questions"])
+                            {
+
+                                <tr>
+                                    <td></td>
+                                    @*  <td>
+                                            @Html.DisplayFor(modelItem => item.QuestionId)
+                                        </td>*@
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Question1)
+                                    </td>
+                                    @*  <td>
+                                            @Html.DisplayFor(modelItem => item.QAType.Description)
+                                        </td>*@
+                                    <td>
+                                        @*@if (@item.QAType.TypeId == 1)
+                                            {
+                                                <select name="AnswerType" class="form-control input-validation-error">
+                                                    <option value="">--Select Answer</option>
+                                                    <option value="1">Yes</option>
+                                                    <option value="2">No</option>
+                                                </select>
+
+                                            }
+                                            else
+                                            {
+                                                // @Html.DisplayFor(modelItem => item.)
+                                            }*@
+                                        <input type="text" name="answers[@i].Value" />
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                i++;
+                            }
+
+                        </table>
+
+                        //<button type="submit">Ok</button>
+                        <div class="box-footer pull-right">
+                            <button type="submit" class="btn btn-success">Resolve</button>
+                            <a class="btn btn-danger" href="@Url.Action("Index", "Messages")">Cancel</a>
+                        </div>
+                    }
+
+
+                </div>
+
+                @*@using (Html.BeginForm())
+                    {
+                        @Html.ValidationSummary(true)
+
+                        @Html.HiddenFor(model => model.ResolutionID)
+
+                        <div class="editor-label">
+                            @Html.LabelFor(model => model.SurveyID, "Survey")
+                        </div>
+                        <div class="editor-field">
+                            @Html.DropDownList("SurveyID", String.Empty)
+                            @Html.ValidationMessageFor(model => model.SurveyID)
+                        </div>
+
+                        <div class="editor-label">
+                            @Html.LabelFor(model => model.UserId, "User")
+                        </div>
+                        <div class="editor-field">
+                            @Html.DropDownList("UserId", String.Empty)
+                            @Html.ValidationMessageFor(model => model.UserId)
+                        </div>
+
+                        <div class="editor-label">
+                            @Html.LabelFor(model => model.message)
+                        </div>
+                        <div class="editor-field">
+                            @Html.EditorFor(model => model.message)
+                            @Html.ValidationMessageFor(model => model.message)
+                        </div>
+
+                        <p>
+                            <input type="submit" value="Save" />
+                        </p>
+
+                    }*@
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="add-question-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-question-circle"></i>Add Question</h4>
+                </div>
+                <form action="@Url.Action("Create", "Questionspool")" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">Select Type</span>
+                                @*@Html.DropDownList("Type", null, null, new { @class = "form-control" })*@
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="Question" class="form-control"></textarea>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class=""></i>Close</button>
+                        <button type="submit" class="btn btn-primary pull-left"><i class="fa fa-plus"></i>Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    'use strict';
+
+    angular.module('myApp', ['myApp.directives']);
+
+    function MyController($scope, $http) {
+        @*$scope.reqparam = { id: '@Model.SurveyId' };
+        $scope.message = "";
+        $scope.questions = [];
+        var onSucess = function (d) {
+            $scope.questions = d;
+            for (var i = 0; i < $scope.questions.length; i++) {
+                $scope.message += ($scope.questions[i] + " ");
+            }
+        };
+
+        $scope.getdata = function () {
+            $http.post("@Url.Action("QuestionsToMessage", "Survey")", $scope.reqparam).success(onSucess);
+        };*@
+
+        // $scope.getdata();
+    }
+</script>
+
+
+<script>
+    $(function () {
+        //alert("hello");
+        $('#participation').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false
+            },
+
+            //tooltip: {
+            //    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            //},
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.2f}</b>%',
+                percentageDecimals: 1
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                type: 'pie',
+                name: 'Participation',
+                data: [
+                    ['Responded', @ViewBag.Responded],
+                    ['Pending', @ViewBag.Pending]
+
+                ]
+            }]
+        });
+    });
+</script>
+
+<script>
+    $('[data-toggle="confirmation"]').confirmation({
+        placement: 'top',
+        popout: true,
+        singleton: true
+    });
+    //$('.confirmation-callback').confirmation({
+    //    placement:'top',
+    //    popout:true,
+    //    singleton:true,
+    //    //onConfirm: function () { alert('confirm'); },
+    //    //onCancel: function () { alert('cancel'); }
+    //});
+
+    //function delete_participant() {
+    //    alert("Hi");
+    //}
+</script>

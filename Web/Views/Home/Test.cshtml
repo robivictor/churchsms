@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "Test";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div ng-controller="AngularWayCtrl as showCase">
+    <table datatable="ng" class="row-border hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>FirstName</th>
+                <th>LastName</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="person in showCase.persons">
+                <td>{{ person.id }}</td>
+                <td>{{ person.firstName }}</td>
+                <td>{{ person.lastName }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    angular.module('showcase.angularWay', ['datatables', 'ngResource'])
+.controller('AngularWayCtrl', AngularWayCtrl);
+
+    function AngularWayCtrl($resource) {
+        var vm = this;
+        $resource('/Content/data.json').query().$promise.then(function (persons) {
+            vm.persons = persons;
+        });
+    }
+</script>

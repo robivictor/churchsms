@@ -1,0 +1,40 @@
+{
+  "name": "cropit",
+  "description": "Customizable crop and zoom.",
+  "version": "0.2.0",
+  "authors": [
+    "Scott Cheng <me@scottcheng.com>",
+    "Yufei Liu <liu.yufei@gmail.com>"
+  ],
+  "main": "dist/jquery.cropit.js",
+  "keywords": [
+    "crop",
+    "zoom",
+    "image editor"
+  ],
+  "license": "MIT",
+  "homepage": "http://scottcheng.github.io/cropit",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "jquery": ">=1.9"
+  },
+  "devDependencies": {
+    "jquery": "~2.1.1",
+    "jasmine-jquery": "~2.0.5"
+  },
+  "_release": "0.2.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.2.0",
+    "commit": "d8f2cf664fd9fba640bff3309a90d5126b4567be"
+  },
+  "_source": "git://github.com/scottcheng/cropit.git",
+  "_target": "~0.2.0",
+  "_originalSource": "cropit",
+  "_direct": true
+}

@@ -1,0 +1,121 @@
+﻿@using System.Web.UI.WebControls
+@using Microsoft.Ajax.Utilities
+@model DataModels.Models.ServiceCode
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Serivce Code
+        <small>Create New </small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Index", "Services")"><i class="fa fa-list"></i>&nbsp;Services</a>
+}
+
+
+<div ng-app="" ng-controller="serviceCodeController" class="box box-primary">
+    <div class="box-header">
+        @*<h3 class="box-title">Enter project details</h3>*@
+    </div>
+    @using (Html.BeginForm())
+    {
+        <div class="box-body">
+            <div class="row center-block">
+                <div class="col-md-6 box-content">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Code)
+                        <small class="text-muted"> If an incoming text starts with </small>
+                        @Html.TextBoxFor(model => model.Code, new { @class = "form-control", @placeholder = "CODE",@required="" })
+                        @Html.ValidationMessageFor(model => model.Code)
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Service)
+                        @Html.TextBoxFor(model => model.Service, new { @class = "form-control", @placeholder = "Service",@required="" })
+                        @Html.ValidationMessageFor(model => model.Service)
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Response)
+                            <textarea class="form-control" required="" name="Response" maxlength="160" ng-trim="false" ng-model="msg" style="height: 120px; font-size: 15px">
+                              HI                            
+                            </textarea>
+                            <div class="box-footer">
+                                <h4 class="label label-danger">{{160-msg.length}}</h4>
+                                @Html.ValidationMessageFor(model => model.Response)
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 box-content">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Active)
+                        @Html.EditorFor(model => model.Active, new { @class = "form-control" })
+                        <div class="alert alert-info" style="margin-left: 0"><span class=" text-muted"> If disabled, the system will not do anything even if it recieves text messges starting with the specific code</span></div>
+                        @Html.ValidationMessageFor(model => model.Active)
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.AutoReply)
+                        @Html.EditorFor(model => model.AutoReply, new { @class = "form-control" })    
+                        <div class="alert alert-info" style="margin-left: 0"><span class="text-muted"> If autoreply is enabled, the system will automatically send a pre designed auto-response to the requesting subscriber</span></div>
+                        @Html.ValidationMessageFor(model => model.AutoReply)
+                    </div>
+                </div>
+
+                <div class="col-md-12 box-content">
+                    <div class="pull-right" style="margin:5px">
+                        <button type="submit" class="btn btn-primary pull-left"><i class="fa fa-save"></i>&nbsp;Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+<script>
+    function serviceCodeController($scope, $http) {
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-center",
+            "onclick": null,
+            "showDuration": "200",
+            "hideDuration": "500",
+            "timeOut": "5000",
+            "extendedTimeOut": "100",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+
+        $scope.alert = function() {
+            var error = '@ViewBag.Error';
+          
+            if(error.toString()!="") {
+                toastr.error(error.toString());
+            }
+        };
+        $scope.alert();
+
+        var options = {
+            size: 'small'
+        };
+        $("#Active").bootstrapSwitch(options);
+        $("#AutoReply").bootstrapSwitch(options);
+    }
+</script>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

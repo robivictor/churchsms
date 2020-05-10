@@ -1,0 +1,113 @@
+﻿@model IEnumerable<DataModels.Models.MessageLog>
+
+@{
+    ViewBag.Title = "Comments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Comments
+        <small>Manage Commments</small>
+    </h1>
+}
+
+<div ng-app="" ng-controller="commentsController" class="box box-primary">
+   
+    <div class="box-body table-responsive table-condensed">
+        <table id="contacts" class="table table-hover table-condensed">
+            <thead class="bg-orange">
+                <tr>
+                    <th></th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.PhoneNumber)
+                    </th>
+                    @*<th>
+                            @Html.DisplayNameFor(model => model.Status)
+                        </th>*@
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.Users)*@
+                        Comment
+                    </th>
+                    <th>
+                        @*@Html.DisplayNameFor(model => model.Description)*@
+                        Time
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="small-col">
+                        @*<input type="checkbox" />*@
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PhoneNumber)
+                    </td>
+                  
+                    <td style="width: 40%">
+                        <div class="messagein">
+                            @Html.DisplayFor(modelItem => item.MessageBody)
+                        </div>
+                    </td>
+                    <td style="text-align: left">
+                        @Html.DisplayFor(modelItem => item.Time)
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-danger " ng-click="delete_comment($event,@item.MessageID)">&nbsp;Delete</a>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#contacts').DataTable({
+            stateSave: true
+        });
+    });
+</script>
+
+
+<script>
+    function commentsController($scope, $http) {
+        $scope.delete_comment = function($event, item) {
+            var table = $('#contacts').DataTable();
+            var cur = $(event.target).parent().parent();
+
+            bootbox.dialog({
+                message: "Are you sure you want delete this comment?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function() {
+                            $http.post("@Url.Action("DeleteLog", "Messages")", { id: item }).success(function() {
+                                //alert(cur.html());
+                               table.row(cur).remove().draw();
+                            });
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+            @*bootbox.confirm("Are you sure?", function (result) {
+                //alert(result);
+                if (result) {
+                    $http.post("@Url.Action("Disable", "Contacts")", { id: item });
+                    window.location = "@Url.Action("Index","Contacts")";
+                }
+            });*@
+        };
+    }
+</script>

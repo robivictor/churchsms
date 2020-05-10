@@ -1,0 +1,156 @@
+﻿@model IEnumerable<DataModels.Models.AspNetUser>
+
+@{
+    ViewBag.Title = "Contacts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Contacts
+        <small>Manage User Accounts</small>
+    </h1>
+}
+
+<div id='dialogDiv' class="modal fade in" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div id='dialogContent'></div>
+    </div>
+</div>
+
+
+<div ng-app="" ng-controller="contactController" class="box box-primary">
+    <div class="box-header">
+        <h3 class="box-title"></h3>
+
+        <div class="box-tools">
+            <div class="pull-left">
+                <a class="btn  btn-primary" href="@Url.Action("Register", "Account")"><span class="glyphicon glyphicon-user"></span>New Account</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="box-body table-responsive table-condensed">
+        <table id="contacts" class="table table-hover table-condensed">
+            <thead class="bg-orange">
+                <tr>
+                    <th></th>
+                    <th>
+                        User Name
+                    </th>
+                    @*<th>
+                        Created Date
+                    </th>*@
+                    <th>
+                        Role
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="small-col">
+                        <input type="checkbox" />
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserName)
+                    </td>
+                    @*<td>
+                        @Html.DisplayFor(modelItem => item.AspNetUserLogins.)
+                    </td>*@
+                    <td style="text-align: left">
+                        @Html.DisplayFor(modelItem => item.AspNetRoles.FirstOrDefault().Name)
+                    </td>
+                    <td>
+                        <a class="btn btn-xs btn-default " href="@Url.Action("Edit", "Contacts", new { id = item.Id })"><i class="fa fa-edit"></i>Edit</a>
+                        @* <a class = "btn btn-sm btn-default "  href="@Url.Action("Details", "Contacts", new { id = item.UserId })"><i class="fa fa-dashboard"></i>Details</a>*@
+                        @*<a class="btn btn-sm btn-danger " href="@Url.Action("Delete", "Contacts", new { id = item.UserId })"><i class="fa fa-minus-circle "></i>Delete</a>*@
+                        <a class="btn btn-xs btn-danger " ng-click="delete_contact(@item.Id)"><i class="fa fa-minus-circle "></i>Disable</a>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<script>
+    function add_contact(e) {
+        @*  e.preventDefault();
+        var url = "@Url.Action("Create", "Contacts")";
+        $('#dialogContent').load(url, function () {
+            $('#dialogDiv').modal({
+                backdrop: 'static',
+                keyboard: true
+            }, 'show');
+        });
+        return false;*@
+
+        alert("adding");
+    }
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $.ajaxSetup({ cache: false });
+        $('#addContact').click(function () {
+            $('#dialogContent').load(this.href, function () {
+                $('#dialogDiv').modal({
+                    backdrop: 'static',
+                    keyboard: true
+                }, 'show');
+            });
+            return false;
+        });
+    });
+
+    $(document).ready(function () {
+        $('#contacts').DataTable({
+            stateSave: true
+        });
+    });
+</script>
+
+
+<script>
+    function contactController($scope, $http) {
+        $scope.delete_contact = function (item) {
+            bootbox.dialog({
+                message: "Are you sure you want delete this user?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("Disable", "Contacts")", { id: item });
+                            window.location = "@Url.Action("Index","Contacts")";
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+            @*bootbox.confirm("Are you sure?", function (result) {
+                //alert(result);
+                if (result) {
+                    $http.post("@Url.Action("Disable", "Contacts")", { id: item });
+                    window.location = "@Url.Action("Index","Contacts")";
+                }
+            });*@
+        };
+    }
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $("[data-mask]").inputmask();
+    });
+</script>
+
+

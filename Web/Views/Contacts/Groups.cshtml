@@ -1,0 +1,150 @@
+﻿@model IEnumerable<DataModels.Models.Group>
+
+@{
+    ViewBag.Title = "Groups";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Groups
+        <small>Manage Groups</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Create", "Groups")"><span class="fa fa-plus-circle"></span>&nbsp;Create new group</a>
+}
+
+<div ng-app="" ng-controller="groupController" class="box box-primary">
+    
+
+    <div class="box-body table-responsive table-condensed">
+        <table id="contacts" class="table table-hover table-condensed">
+            <thead class="bg-orange">
+                <tr class="text-center">
+                    @*<th></th>*@
+                    <th>
+                        @Html.DisplayNameFor(model => model.GroupName)
+                    </th>
+                    <th>
+                        Group Leader
+                    </th>
+                    <th>
+                        Members
+                    </th>
+                    <th>
+                        About
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    @*<td class="small-col">
+                        <input type="checkbox" />
+                    </td>*@
+                    <td>
+                        <a href="@Url.Action("Details","Groups", new{id=item.GroupID})">@Html.DisplayFor(modelItem => item.GroupName)</a>
+                    </td>
+                    <td></td>
+                    <td>
+                        <p class="badge bg-light-blue">@item.UserGroups.Count</p>
+                    </td>
+                    <td style="text-align: left">
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td class="dt-body-nowrap">
+                        <a class="btn btn-xs btn-default " href="@Url.Action("Edit", "Groups", new { id = item.GroupID })"><i class="fa fa-edit"></i>&nbsp;Edit</a>
+                        @* <a class = "btn btn-sm btn-default "  href="@Url.Action("Details", "Contacts", new { id = item.UserId })"><i class="fa fa-dashboard"></i>Details</a>*@
+                        @*<a class="btn btn-sm btn-danger " href="@Url.Action("Delete", "Group", new { id = item.GroupID })"><i class="fa fa-minus-circle "></i>Delete</a>*@
+                        <a class="btn btn-xs btn-danger " ng-click="delete_group($event,@item.GroupID)"><i class="fa fa-minus-circle "></i>&nbsp;Delete</a>
+                    </td>
+                </tr>
+            }
+        </table>
+
+    </div>
+</div>
+
+<script>
+    function add_contact(e) {
+        @*  e.preventDefault();
+        var url = "@Url.Action("Create", "Contacts")";
+        $('#dialogContent').load(url, function () {
+            $('#dialogDiv').modal({
+                backdrop: 'static',
+                keyboard: true
+            }, 'show');
+        });
+        return false;*@
+
+        alert("adding");
+    }
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $.ajaxSetup({ cache: false });
+        $('#addContact').click(function () {
+            $('#dialogContent').load(this.href, function () {
+                $('#dialogDiv').modal({
+                    backdrop: 'static',
+                    keyboard: true
+                }, 'show');
+            });
+            return false;
+        });
+    });
+
+    $(document).ready(function () {
+        $('#contacts').DataTable({
+            stateSave: true
+        });
+    });
+</script>
+
+
+<script>
+    function groupController($scope, $http) {
+        $scope.delete_group = function ($event, item) {
+            //var table = $('contacts').Dat
+            var cur = $(event.target).parent().parent();
+            bootbox.dialog({
+                message: "Are you sure you want delete this group?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("DeleteGroup", "Groups")", { id: item }).success(function () {
+                                //alert(cur.html());
+                                cur.remove();
+                            });
+                            //var table = $('#contacts').DataTable();
+                            //table.draw();
+                            //window.location = "@Url.Action("Groups","Contacts")";
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+            @*bootbox.confirm("Are you sure?", function (result) {
+                //alert(result);
+                if (result) {
+                    $http.post("@Url.Action("Disable", "Contacts")", { id: item });
+                    window.location = "@Url.Action("Index","Contacts")";
+                }
+            });*@
+        };
+    }
+</script>
+

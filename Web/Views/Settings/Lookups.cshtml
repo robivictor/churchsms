@@ -1,0 +1,424 @@
+﻿@model DataModels.Models.User
+
+@{
+    ViewBag.Title = "Lookups";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    @*    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove-circle"></span></button>*@
+    <h1>
+        <i class="fa fa-list-ol"></i> Lookups
+        <small>Manage lookups </small>
+    </h1>
+}
+@section actions {
+    @*<a class="btn btn-default" href="@Url.Action("MessageHistory", "Contacts", new { id = Model.UserId })"><span class="fa fa-envelope"></span>&nbsp;SMS</a>*@
+    @*<a class="btn btn-default" ng-click="RemoveDisable()"><span class="fa fa-list"></span>&nbsp;Edit</a>*@
+    @*<a class="btn btn-default" href="@Url.Action("Index", "Contacts")"><span class="fa fa-list"></span>&nbsp;Contacts</a>*@
+}
+
+<div ng-app="myApp" ng-controller="LookupController" class="box box-primary">
+
+    <div class="box-header">
+    </div>
+    <div class="box-body">
+        <div class="row center-block">
+            <div class="col-md-3">
+                <ul class="nav nav-pills nav-stacked">
+                    <li id="lookup1_tab"> <a href="#lookup1" role="tab" data-toggle="tab"><i class="fa fa-user"></i>&nbsp;Occupations</a></li>
+                    <li id="lookup2_tab"> <a href="#lookup2" role="tab" data-toggle="tab"><i class="fa fa-home"></i>&nbsp;Gifts</a></li>
+                    <li id="lookup3_tab"> <a href="#lookup3" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i>&nbsp;Group Tags</a></li>
+                </ul>
+            </div>
+            <div class="col-md-9">
+                <div class="tab-content">
+                    <div id="lookup1" class="tab-pane">
+                        <div class="col-md-12 ">
+                            <div class="tab-header" style="border-bottom: none">
+                                <div class="pull-left">
+                                    <p class="text-primary">Occupations <span class="badge badge-important">{{occupations.length}}</span></p>
+                                </div>
+                                <a class="btn btn-default pull-right" ng-click="toggle(1)">{{text}}</a>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="box box-success" ng-show="show">
+                                <div class="box-header">
+                                    <h3 class="box-title">Add New Occupation</h3>
+                                </div>
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="col-xs-8">
+                                            <input type="text" ng-model="occupationName" class="form-control" placeholder="Occupation Name">
+                                        </div>
+                                        <div class="col-xs-4">
+                                            <button class="btn btn-success" ng-click="Add(1)"><i class="fa fa-plus-circle"></i>&nbsp;Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="box box-primary">
+                                <div class="box-body no-padding">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Occupation</th>
+                                                <th>Total</th>
+                                                <th>Percentage</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="oc in occupations">
+                                                <td>{{$index+1}}</td>
+                                                <td>{{oc.Name}}</td>
+                                                <td>
+                                                    <span class="badge bg-red">
+                                                        <ng-pluralize count="oc.Total" when="{'0':'None ','one':'1 Member','other':'{} Members'}">
+                                                        </ng-pluralize>
+                                                    </span>
+                                                    <span class="badge bg-green">{{oc.Percentage}}%</span>
+                                                </td>
+                                                <td>
+                                                    <div class="progress sm ">
+                                                        <div class="progress-bar progress-bar-primary" ng-style="{'width' : oc.Percentage+'%'}"></div>
+                                                    </div>
+                                                    @* {{oc.Percentage}}%*@
+                                                </td>
+                                                <td>
+                                                    <button ng-hide="oc.Total>0" class="btn btn-xs btn-default" ng-click="RemoveItem(oc,1)">Remove</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="lookup2" class="tab-pane">
+                        <div class="col-md-12 ">
+                            <div class="tab-header" style="border-bottom: none">
+                                <div class="pull-left">
+                                    <p class="text-primary">Gifts <span class="badge badge-important">{{gifts.length}}</span></p>
+                                </div>
+                                <a class="btn btn-default pull-right" ng-click="toggle(2)">{{text2}}</a>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="box box-success" ng-show="show2">
+                                <div class="box-header">
+                                    <h3 class="box-title">Add New Gift</h3>
+                                </div>
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="col-xs-8">
+                                            <input type="text" ng-model="giftName" class="form-control" placeholder="Gift Name">
+                                        </div>
+                                        <div class="col-xs-4">
+                                            <button class="btn btn-success" ng-click="Add(2)"><i class="fa fa-plus-circle"></i>&nbsp;Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="box box-primary">
+                                <div class="box-body no-padding">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Gift</th>
+                                                <th>Total</th>
+                                                <th>Percentage</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="g in gifts">
+                                                <td>{{$index+1}}</td>
+                                                <td>{{g.Name}}</td>
+                                                <td>
+                                                    <span class="badge bg-red">
+                                                        <ng-pluralize count="g.Total" when="{'0':'None ','one':'1 Member','other':'{} Members'}">
+                                                        </ng-pluralize>
+                                                    </span>
+                                                    <span class="badge bg-green">{{g.Percentage}}%</span>
+                                                </td>
+                                                <td>
+                                                    <div class="progress sm ">
+                                                        <div class="progress-bar progress-bar-primary" ng-style="{'width' : g.Percentage+'%'}"></div>
+                                                    </div>
+
+                                                </td>
+                                                <td>
+                                                    <button ng-hide="g.Total>0" class="btn btn-xs btn-default" ng-click="RemoveItem(g,2)">Remove</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="lookup3" class="tab-pane">
+                        <div class="col-md-12">
+                            <div class="tab-header" style="border-bottom: none">
+                                <div class="pull-left">
+                                    <p class="text-primary">Group Tags <span class="badge badge-important">{{tags.length}}</span></p>
+                                </div>
+                                <a class="btn btn-default pull-right" ng-click="toggle(3)">{{text3}}</a>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="box box-success" ng-show="show3">
+                                <div class="box-header">
+                                    <h3 class="box-title">Add New Tag</h3>
+                                </div>
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="col-xs-8">
+                                            <input type="text" ng-model="tagName" class="form-control" placeholder="Tag Name">
+                                        </div>
+                                        <div class="col-xs-4">
+                                            <button class="btn btn-success" ng-click="Add(3)"><i class="fa fa-plus-circle"></i>&nbsp;Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="box box-primary">
+                                <div class="box-body no-padding">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Tag</th>
+                                                <th>Total</th>
+                                                <th>Percentage</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="t in tags">
+                                                <td>{{$index+1}}</td>
+                                                <td>{{t.Name}}</td>
+                                                <td>
+                                                    <span class="badge bg-red">
+                                                        <ng-pluralize count="t.Total" when="{'0':'None ','one':'1 Group','other':'{} Groups'}">
+                                                        </ng-pluralize>
+                                                    </span>
+                                                    <span class="badge bg-green">{{t.Percentage}}%</span>
+                                                </td>
+                                                <td>
+                                                    <div class="progress sm ">
+                                                        <div class="progress-bar progress-bar-primary" ng-style="{'width' : t.Percentage+'%'}"></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button ng-hide="t.Total>0" class="btn btn-xs btn-default" ng-click="RemoveItem(t,3)">Remove</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+<script type="text/javascript">
+    $(function () {
+        //$('.tab-pane').bind('change', function (e) {
+        //    toastr.success("Changed");
+        //});
+        switch ('@ViewBag.Active') {
+            case '1':
+                $("#lookup1_tab").addClass("active");
+                $("#lookup1").addClass("active");
+                break;
+            case '2':
+                $("#lookup2_tab").addClass("active");
+                $("#lookup2").addClass("active");
+                break;
+            case '3':
+                $("#lookup3_tab").addClass("active");
+                $("#lookup3").addClass("active");
+                break;
+            default:
+                $("#personal_tab").addClass("active");
+                $("#personal").addClass("active");
+        }
+    });
+</script>
+
+
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "progressBar": false,
+        "positionClass": "toast-bottom-right",
+        "onclick": null,
+        //"showDuration": "500",
+        //"hideDuration": "500",
+        //"timeOut": "2000",
+        // "extendedTimeOut": "100",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    var myApp = angular.module('myApp', []);
+    //var MemberID = '1';
+
+    myApp.controller('LookupController', [
+        '$scope', '$http', function ($scope, $http) {
+
+            $scope.occupations = [];
+            $scope.show = false;
+            $scope.text = "Add";
+
+            $scope.gifts = [];
+            $scope.show2 = false;
+            $scope.text2 = "Add";
+
+            $scope.tags = [];
+            $scope.show3 = false;
+            $scope.text3 = "Add";
+
+            $scope.toggle = function (item) {
+
+                switch (item) {
+                    case 1:
+                        if ($scope.show) {
+                            $scope.text = "Add";
+                        } else {
+                            $scope.text = "Hide";
+                        }
+                        $scope.show = !$scope.show;
+                        break;
+                    case 2:
+                        if ($scope.show2) {
+                            $scope.text2 = "Add";
+                        } else {
+                            $scope.text2 = "Hide";
+                        }
+                        $scope.show2 = !$scope.show2;
+                        break;
+                    case 3:
+                        if ($scope.show3) {
+                            $scope.text3 = "Add";
+                        } else {
+                            $scope.text3 = "Hide";
+                        }
+                        $scope.show3 = !$scope.show3;
+                        break;
+                }
+            }
+
+            $scope.Add = function (item) {
+                switch (item) {
+                    case 1:
+                        if ($scope.occupationName != "") {
+                            $http.post("@Url.Action("InsertLookup", "Data")", { title: $scope.occupationName, lookupId: item }).success(function () {
+                                toastr.success('You have added ' + $scope.occupationName + ' to occcupations.');
+                                $scope.GetOccupations();
+                                $scope.occupationName = "";
+                            }).error(function () {
+                                toastr.error("An error occured, try again!");
+                            });
+                        } else {
+                            toastr.error("Empty input");
+                        }
+                        break;
+                    case 2:
+                        if ($scope.giftName != "") {
+                            $http.post("@Url.Action("InsertLookup", "Data")", { title: $scope.giftName, lookupId: item }).success(function () {
+                                toastr.success('You have added ' + $scope.giftName + ' to gifts.');
+                                $scope.GetGifts();
+                                $scope.giftName = "";
+                            }).error(function () {
+                                toastr.error("An error occured, try again!");
+                            });
+                        } else {
+                            toastr.error("Empty input");
+                        }
+                        break;
+                    case 3:
+                        if ($scope.tagName != "") {
+                            $http.post("@Url.Action("InsertLookup", "Data")", { title: $scope.tagName, lookupId: item }).success(function () {
+                                toastr.success('You have added ' + $scope.tagName + ' to gifts.');
+                                $scope.GetTags();
+                                $scope.tagName = "";
+                            }).error(function () {
+                                toastr.error("An error occured, try again!");
+                            });
+                        } else {
+                            toastr.error("Empty input");
+                        }
+                        break;
+                }
+            }
+
+            $scope.RemoveItem = function (item, id) {
+
+                $http.post("@Url.Action("RemoveLookup", "Data")", { id: item.ID, lookupId: id }).success(function () {
+                    switch (id) {
+                        case 1:
+                            toastr.success('You removed ' + item.Name + " from occupations");
+                            $scope.GetOccupations();
+                            break;
+                        case 2:
+                            toastr.success('You removed ' + item.Name + " from gifts");
+                            $scope.GetGifts();
+                            break;
+                        case 3:
+                            toastr.success('You removed ' + item.Name + " from tags");
+                            $scope.GetTags();
+                            break;
+                        default:
+                    }
+                }).error(function () {
+                    toastr.error("An error occured, try again!");
+                });
+            }
+            $scope.GetOccupations = function () {
+                $http.post("@Url.Action("GetOccupations", "Data")").success(function (data) {
+                    $scope.occupations = data;
+                }).error(function () {
+                });
+            }
+
+            $scope.GetGifts = function () {
+                $http.post("@Url.Action("GetGifts", "Data")").success(function (data) {
+                    $scope.gifts = data;
+                }).error(function () {
+                });
+            }
+
+            $scope.GetTags = function () {
+                $http.post("@Url.Action("GetTagsLookup", "Data")").success(function (data) {
+                    $scope.tags = data;
+                }).error(function () {
+                });
+            }
+
+            $scope.GetOccupations();
+            $scope.GetGifts();
+            $scope.GetTags();
+        }]);
+
+</script>

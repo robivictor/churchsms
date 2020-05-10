@@ -1,0 +1,627 @@
+﻿@using ChurchSMS.Models
+@model DataModels.Models.Survey
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var people = (List<ParticipantViewModel>)ViewData["Participants"];
+    var pending = people.Count(t => t.Status == false);
+}
+
+
+<style>
+    .chartWrap {
+        margin: 0 auto;
+        width: 100%;
+        height: 186px;
+    }
+</style>
+
+@section header {
+    <h1>
+        @Model.SurveyName
+        <small>Detail</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Index", "Survey")"><i class="fa fa-list"></i><span>Surveys</span></a>
+    <a class="btn btn-default" href="@Url.Action("Edit", "Survey", new { id = Model.SurveyId })"><i class="fa fa-edit"></i><span>Edit</span></a>
+    @if (Model.Status == 1 || Model.Status == 2)
+    {
+        <a class="btn btn-default" href="@Url.Action("Export", "Export", new { surveyID = Model.SurveyId })"><i class="fa fa-download"></i><span>Export</span></a>
+    }
+    <a class="btn btn-default" href="@Url.Action("Index", "Settings")"><i class="fa fa-fw fa-gears"></i><span>Manage Questions</span></a>
+}
+
+<div ng-app ng-controller="MyController">
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-body">
+
+                    <table class="table table-condensed">
+                        <tbody>
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.SurveyName)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.SurveyName)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.StartDate)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.StartDate)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.SurveyStatu.Description)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.SurveyStatu.Description)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.Questions)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Questions.Count)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.EndDate)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.EndDate)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Unresolved Feedbacks</td>
+                                <td>
+                                    <a href="@Url.Action("Index","Messages",new{activetab=3})"> <span class="badge bg-red">@Model.Resolutions.Count(r => r.Resolved == false)</span></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @if (Model.Status == 3)
+        {
+            <div class="col-md-6">
+
+                <div class="box">
+                    <div class="box-body" style="height: 200px;">
+                        <p><b>Message to be sent</b></p>
+                        <form action="@Url.Action("SendMessage", "Survey", new { id = Model.SurveyId })" method="post">
+                            <textarea disabled name="msg" class="form-control" style="height: 100px;">{{message}}</textarea>
+                            <div class="box-footer">
+                                <a ng-click="validate()" class="btn btn-sm btn-primary pull-right">Send Message</a>
+                                <h4 class="text-orange pull-left">{{ message.length }}/160</h4>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            @*<div class="col-lg-6 col-xs-6">
+                    <div class="small-box bg-orange">
+                        <div class="inner">
+                            <h3>@ViewBag.Percent<sup style="font-size: 30px">%</sup>
+                            </h3>
+                        </div>
+                        <a href="#" class="small-box-footer"><i class="fa fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-xs-6">
+                    <div class="small-box bg-aqua">
+                        <div class="inner">
+                            <h3>@ViewBag.Days<sup style="font-size: 15px">days</sup>
+                            </h3>
+                        </div>
+                        <a href="#" class="small-box-footer">More success <i class="fa fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>*@
+
+            <div class="col-md-6">
+                <!-- Line chart -->
+                <div class="box box-primary">
+                    <div class="box-header">
+                        <h4 class="box-title"></h4>
+                    </div>
+                    <div class="box-body">
+                        <div id="participation" class="chartWrap"></div>
+                    </div>
+                    <!-- /.box-body-->
+                </div>
+                <!-- /.box -->
+            </div>
+        }
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><b>Poll Questions <span class="badge bg-green">@Model.Questions.Count</span></b></h3>
+                    <div class="box-tools">
+                        <div class="pull-right">
+                            @if (Model.Status == 3)
+                            {
+                                <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#add-question-modal"><i class="fa fa-plus"></i>Add Question</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body" style="padding-top: 0px">
+                    <table id="questions" class="table table-hover table-condensed">
+                        <thead class="bg-orange">
+                            <tr>
+                                <th></th>
+                                <th>
+                                    Question
+                                </th>
+                                <th>
+                                    Type
+                                </th>
+                                <th>
+                                    Response
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in (List<QuestionViewModel>)ViewData["Questions"])
+                        {
+
+                            <tr>
+                                <td></td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Question)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Type)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Responded)
+                                </td>
+                                <td>
+                                    @if (Model.Status == 3)
+                                    {
+                                        <a class="btn btn-xs btn-default" ng-click="delete_question($event,@item.QuestionId)"><i class="fa fa-trash-o"></i>&nbsp;Delete</a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-xs btn-default" href="@Url.Action("Details", "Questions", new { id = item.QuestionId })">Details<i class="fa fa-angle-double-right"></i></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><b>Participants <span class="badge bg-green">@Model.Users1.Count</span></b> </h3>
+                    <div class="box-tools">
+                        <div class="pull-right">
+                            @if (Model.Status == 3)
+                            {
+                                <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#add-group-modal"><i class="fa fa-plus"></i>Add By group</a>
+                                <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#add-participant-modal"><i class="fa fa-plus"></i>Add Participant</a>
+                            }
+                            else if (pending > 0)
+                            {
+                                <a class="btn btn-sm btn-primary" ng-click="resendall(@Model.SurveyId)"><i class="fa fa-envelope-o"></i>&nbsp;Resend to all pending<span class="badge bg-green">@pending</span></a>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box-body" style="padding-top: 0px">
+                    <table id="participants" class="table table-hover table-condensed">
+                        <thead class="bg-orange">
+                            <tr>
+                                <th></th>
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Phone
+                                </th>
+                                <th>
+                                    About
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in (List<ParticipantViewModel>)ViewData["Participants"])
+                        {
+                            <tr>
+                                <td></td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Phone)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Description)
+                                </td>
+                                <td>
+                                    @if (item.Status)
+                                    {
+                                        <div class="label label-success">
+                                            Responded
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="label label-default">
+                                            Pending
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (Model.Status == 3)
+                                    {
+                                        //<a href="#" class="btn btn-default confirmation-callback">Click me</a>
+                                        //<a class="btn btn-sm btn-default"><i class="fa fa-trash-o"></i>Delete</a>
+                                        @*<a href="@Url.Action("DeleteParticipant", "Survey", new { userId = item.UserId, surveyId = Model.SurveyId })" class="btn btn-sm btn-default" data-toggle="confirmation"><i class="fa fa-trash-o"></i>Delete</a>*@
+                                        <a class="btn btn-xs btn-default" ng-click="delete_participant($event,@item.UserId,@Model.SurveyId)"><i class="fa fa-trash-o"></i>&nbsp;Delete</a>
+                                    }
+                                    else if (!item.Status)
+                                    {
+                                        <a class="btn btn-xs btn-default" href="@Url.Action("Resend", "Survey", new { userid = item.UserId, surveyid = Model.SurveyId })"><i class="fa fa-envelope"></i>&nbsp;Resend</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="add-participant-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-user"></i>Add Participant</h4>
+                </div>
+                <form action="@Url.Action("AddParticipant", "Survey")" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">Select Contact</span>
+                                @Html.DropDownList("UserId", null, null, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <input name="SurveyID" hidden="" value="@Model.SurveyId" />
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class=""></i>Close</button>
+                        <button type="submit" class="btn btn-primary pull-left"><i class="fa fa-plus"></i>Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="add-question-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-question-circle"></i>Add Question</h4>
+                </div>
+                <form action="@Url.Action("AddQuestion", "Survey")" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">Select Question</span>
+                                @Html.DropDownList("QuestionId", null, null, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <input name="SurveyID" hidden="" value="@Model.SurveyId" />
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class=""></i>Close</button>
+                        <button type="submit" class="btn btn-primary pull-left"><i class="fa fa-plus"></i>Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="add-group-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-users"></i>Add Participants by group</h4>
+                </div>
+                <form action="@Url.Action("AddGroup", "Survey")" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">Select Group</span>
+                                @Html.DropDownList("GroupId", null, null, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <input name="SurveyID" hidden="" value="@Model.SurveyId" />
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class=""></i>Close</button>
+                        <button type="submit" class="btn btn-primary pull-left"><i class="fa fa-plus"></i>Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    'use strict';
+
+    angular.module('myApp', ['myApp.directives']);
+
+    function MyController($scope, $http) {
+        $scope.reqparam = { id: '@Model.SurveyId' };
+        $scope.message = "";
+        $scope.questions = [];
+        $scope.participants = '@Model.Users1.Count';
+
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-right",
+            "onclick": null,
+            "showDuration": "200",
+            "hideDuration": "500",
+            "timeOut": "2000",
+            "extendedTimeOut": "100",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+
+        var onSucess = function (d) {
+            $scope.questions = d;
+            for (var i = 0; i < $scope.questions.length; i++) {
+                $scope.message += ($scope.questions[i] + " ");
+            }
+        };
+
+        $scope.getdata = function () {
+            $http.post("@Url.Action("QuestionsToMessage", "Survey")", $scope.reqparam).success(onSucess);
+        };
+
+        $scope.validate = function () {
+            if ($scope.participants == 0 && $scope.message.length == 0) {
+                bootbox.dialog({
+                    message: "There are no participants and questions. First add atleast one or more participants and questions.",
+                    title: "No Participants and No questions",
+                    buttons: {
+                        main: {
+                            label: "Cancel",
+                            className: "btn-danger",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            } else if ($scope.message.length == 0) {
+                bootbox.dialog({
+                    message: "The message to be sent is empty, you probably didn't add questions to the p.",
+                    title: "Empty Message",
+                    buttons: {
+                        main: {
+                            label: "Cancel",
+                            className: "btn-danger",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            } else if ($scope.participants == 0) {
+                bootbox.dialog({
+                    message: "There are no participants added to this poll, before you send this message you need to add participants first.",
+                    title: "Add Participants First",
+                    buttons: {
+                        main: {
+                            label: "Cancel",
+                            className: "btn-danger",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            } else {
+                bootbox.dialog({
+                    message: "You are about to send a message to " + $scope.participants + " people. Are you sure you want to continue?",
+                    title: "Confirm to send",
+                    buttons: {
+                        danger: {
+                            label: "Send",
+                            className: "btn-success",
+                            callback: function () {
+                                $http.post("@Url.Action("SendMessage", "Survey")", { msg: $scope.message, id: '@Model.SurveyId' });
+                                window.location = "@Url.Action("Details","Survey",new{id=Model.SurveyId})";
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        $scope.getdata();
+
+        $scope.delete_question = function ($event, item) {
+            var table = $('#questions').DataTable();
+            var cur = $(event.target).parent().parent();
+            bootbox.dialog({
+                message: "Are you sure you want delete this question?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("DeleteSurveyQuestion", "Questions")", { id: item }).success(function () {
+                                $scope.getdata();
+                                table.row(cur).remove().draw();
+                                toastr.success('You just removed one survey question.');
+                            }).error(function () {
+                                toastr.error('An error occured');
+                            });;
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+        };
+
+        $scope.delete_participant = function ($event, user, survey) {
+            var table = $('#participants').DataTable();
+            var cur = $(event.target).parent().parent();
+            bootbox.dialog({
+                message: "Are you sure you want delete this participant?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("DeleteParticipant", "Survey")", { userId: user, surveyId: survey }).success(function () {
+                                table.row(cur).remove().draw();
+                                toastr.success('You just removed one survey participant.');
+                            }).error(function () {
+                                toastr.error('An error occured');
+                            });
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+        };
+        $scope.resendall = function (survey) {
+            bootbox.dialog({
+                message: "You are about to resend to " + '@pending' + " of the participants a survey SMS. Are you sure you want to do that",
+                title: "Confirm to Resend to All",
+                buttons: {
+                    danger: {
+                        label: "Send",
+                        className: "btn-success",
+                        callback: function () {
+                            $http.post("@Url.Action("ResendAll", "Survey")", { surveyId: survey });
+                            window.location = "@Url.Action("Details","Survey",new{id=Model.SurveyId})";
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+        };
+        //$scope.validate();
+    }
+</script>
+
+<script>
+    $(function () {
+        //alert("hello");
+        $('#participation').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.2f}</b>%',
+                percentageDecimals: 1
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                type: 'pie',
+                name: 'Participation',
+                data: [
+                    ['Responded', @ViewBag.Responded],
+                    ['Pending', @ViewBag.Pending]
+                ]
+            }]
+        });
+    });
+</script>
+
+<script>
+    function questionsController($scope, $http) {
+
+    }
+
+    function participantsController($scope, $http) {
+
+    }
+</script>

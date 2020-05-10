@@ -1,0 +1,341 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+}
+
+@section header {
+    @* <h1>Dashboard *@
+    @*<small>Current Survey</small>*@
+    @*</h1>*@
+}
+
+<style>
+    .chartWrap {
+        margin: 0 auto;
+        width: 100%;
+        height: 220px;
+    }
+</style>
+
+<div ng-app="">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h5 class="box-title"><i class="fa fa-envelope"></i>&nbsp;Messages</h5>
+                </div>
+                <div class="box-body text-center">
+                    <a class="btn btn-app" href="@Url.Action("Index", "Messages", new { activetab = 1})">
+                        <span class="badge bg-light-blue">@ViewBag.RecievedToday</span>
+                        <i class="fa fa-envelope"></i>
+                        <h6>Recieved Today</h6>
+                    </a>
+                    <a class="btn btn-app" href="@Url.Action("Index", "Messages", new { activetab = 2 })">
+                        <span class="badge bg-green">@ViewBag.SentToday</span>
+                        <i class="fa fa-envelope"></i>
+                        <h6>Sent Today</h6>
+                    </a>
+
+                    <a class="btn btn-app" href="@Url.Action("Index", "Messages", new { activetab = 3 })">
+                        <span class="badge bg-red">@ViewBag.Resoultion</span>
+                        <i class="fa fa-envelope"></i>
+                        <h6>Needs Resolution</h6>
+                    </a>
+                    <a class="btn btn-app" href="@Url.Action("Index", "Messages", new { activetab = 2 })">
+                        <span class="badge bg-navy">@ViewBag.Unsent</span>
+                        <i class="fa fa-envelope"></i>
+                        <h6>Unsent</h6>
+                    </a>
+                    <!-- /.row -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <!-- Line chart -->
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><i class="fa fa-phone-square"></i>&nbsp;Phone Status</h3>
+                    <div class="box-tools pull-right">
+                        @if (ViewBag.PhoneStatus != true)
+                        {
+                            <p class="label label-danger">Not Connected</p>
+                        }
+                        else
+                        {
+                            @ViewBag.LastConnectedTime <p class="label label-success">Connected</p>
+                        }
+                    </div>
+                </div>
+
+                <div class="box-body text-center">
+                    @if (ViewBag.PhoneStatus != true)
+                    {
+                        <br />
+                        <div class="alert alert-danger">
+                            <i class="fa fa-ban"></i>
+                            <b>Alert!</b>
+                            No mobile phone is connected to the system, please make sure the phone is powered on and is connected to the internet. Once you make sure that, you need to run the ChurchSMS app on the mobile. If you do this you should be fine!
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="small-box">
+                            <div class="inner">
+                                @if (@ViewBag.OnCharge)
+                                {
+                                    <p class="label label-success">Connected to Power Source</p>
+                                }
+                                else
+                                {
+                                    <p class="label label-danger"> Running on battery only</p>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="small-box">
+                            Battery Level  <span class="text-orange">( @ViewBag.BatteryLevel% )</span>
+                            <div class="inner">
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-green" role="progressbar" aria-valuenow="80"
+                                         aria-valuemin="0" aria-valuemax="100" style="width: @ViewBag.BatteryLevel%">
+                                        <span class="sr-only">@ViewBag.BatteryLevel% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="center">
+                            <p class="text-primary">Current SIM number being used</p>
+                            <h3>@ViewBag.SIMnumber</h3>
+                        </div>
+                    }
+
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        
+
+    </div>
+    <div class="row" ng-controller="MessagesController">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title">Contacts and groups</h3>
+                </div>
+                <div class="box-body">
+                    @*<div id="column" class="chartWrap" draw-pie-chart></div>*@
+
+                    <div class="small-box bg-orange">
+                        <div class="">
+
+                        </div>
+                        <div class="inner text-center">
+                            <p style="color: #fff; font-size: 35px">@ViewBag.Contacts <span class="badge bg-green"><i class="fa fa-user"></i>&nbsp;Approved </span> @ViewBag.New <span class="badge bg-red"><i class="fa fa-user"></i>&nbsp;New</span></p>
+                        </div>
+
+                        <a href="@Url.Action("Index","Contacts")" class="small-box-footer">Contacts</a>
+                    </div>
+
+                    <div class="small-box bg-orange">
+                        <div class="inner text-center">
+                            <p style="color: #fff; font-size: 35px">@ViewBag.Groups <span class="badge bg-green"><i class="fa fa-users"></i>&nbsp;Groups</span></p>
+                            @*<p>@ViewBag.Groups <i class="fa fa-users"></i></p>*@
+                        </div>
+                        <a href="@Url.Action("Groups","Contacts")" class="small-box-footer">Groups</a>
+                    </div>
+                    @*<div class="">
+                    <a class="btn btn-success"><i class="fa fa-plus-circle"></i>Add Contact</a>
+                    <a class="btn btn-success"><i class="fa fa-download"></i>Export Contacts</a>
+                </div>*@
+                </div>
+                <!-- /.box-body-->
+            </div>
+          
+            <!-- /.box -->
+        </div>
+
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <!-- Line chart -->
+                @if (ViewBag.ActiveSurvey != null)
+                {
+                    <div class="box-header">
+                        <h4 class="box-title">Participation for <a style="color: #428bca" href="@Url.Action("Details","Survey",new{id=@ViewBag.ActiveSurvey.SurveyId})">@ViewBag.ActiveSurvey.SurveyName</a></h4>
+                    </div>
+                    <div class="box-body">
+                        <div id="participation" class="chartWrap"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="box-body">
+                        <div class="chartWrap">
+                            <p>There is no active survey yet!</p>
+                        </div>
+                    </div>
+                }
+                <!-- /.box-body-->
+            </div>
+        </div>
+    </div>
+    @*<div class="row" ng-controller="MessagesController">
+        <div class="col-md-6" >
+            <!-- Line chart -->
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><i class="fa fa-comments-o"></i> Comments</h3>
+                </div>
+                <div class="box-body chat">
+                    <!-- chat item -->
+                    <div ng-show="(comments).length==0" class="text-center">
+                        <p class="text-primary">There are no comments so far</p>
+                    </div>
+                    <div id="comment">
+                        <div class="item" ng-repeat="comment in comments">
+                            <img src="~/Content/img/avatar2.png" alt="user image" class="online" />
+                            <p class="message">
+                                <a href="#" class="name">
+                                    <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> {{comment.Time| date:'medium'}}</small>
+                                    <span class="text-primary"> {{comment.From}}</span>
+                                </a>
+                                {{comment.Request}}
+                            </p>
+                        </div><!-- /.item -->
+                    </div>
+                    <!-- chat item -->
+                </div><!-- /.chat -->
+                <div ng-show="(comments).length>=5" class="text-center">
+                    <div class="box-footer center">
+                        <a href="@Url.Action("Comments","Messages")"><span class="text-primary"> More Comments</span></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- /.box -->
+        </div>
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><i class="fa fa-question-circle"></i> Prayer Requests</h3>
+                </div>
+                <div class="box-body chat">
+                    <!-- chat item -->
+                    <div ng-show="(prayers).length==0" class="text-center">
+                        <p class="text-primary">There are no prayer request so far</p>
+                    </div>
+                    <div id="test">
+                        <div class="item" ng-repeat="prayer in prayers">
+                            <img src="~/Content/img/avatar2.png" alt="user image" class="online" />
+                            <p class="message">
+                                <a href="#" class="name">
+                                    <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> {{prayer.Time| date:'medium'}}</small>
+                                    <span class="text-primary"> {{prayer.From}}</span>
+                                </a>
+                                {{prayer.Request}}
+                            </p>
+                        </div><!-- /.item -->
+                    </div>
+                    <!-- chat item -->
+
+                </div><!-- /.chat -->
+                <div ng-show="(prayers).length>=5" class="text-center">
+                    <div class="box-footer">
+                        <a href="@Url.Action("Prayer_requests","Messages")" class="text-center"><span class="text-primary"> More Requests</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+       
+    </div>*@
+</div>
+<script>
+    function MessagesController($scope, $http) {
+        $scope.prayers = [];
+        $scope.comments = [];
+
+        $scope.getMessages = function () {
+            $http.post("@Url.Action("Requests","Data")").success(function(data) {
+                $scope.prayers = data;
+            });
+
+            $http.post("@Url.Action("Comments","Data")").success(function(data) {
+                $scope.comments = data;
+            });
+        };
+
+        $scope.getMessages();
+    }
+</script>
+
+<script>
+    $(function () {
+        //alert("hello");
+        $("#test").slimscroll({
+            height: "200px",
+            alwaysVisible: false,
+            size: "5px"
+        }).css("width", "98%");
+
+        $("#comment").slimscroll({
+            height: "200px",
+            alwaysVisible: false,
+            size: "5px"
+        }).css("width", "98%");
+
+        $('#participation').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false
+            },
+
+            //tooltip: {
+            //    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            //},
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.2f}</b>%',
+                percentageDecimals: 1
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                type: 'pie',
+                name: 'Participation',
+                data: [
+                    ['Responded', @ViewBag.Responded],
+                    ['Pending', @ViewBag.Pending]
+
+                ]
+            }]
+        });
+    });
+</script>
+
+<script>
+    //hub = $.connection.real;
+
+    //hub.client.notify = function () {
+    //    toastr.info("Incoming Message");
+    //}
+
+
+</script>

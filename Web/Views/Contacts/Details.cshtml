@@ -1,0 +1,91 @@
+﻿@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@*<link rel="stylesheet" href="image-crop-styles.css">*@
+<script>
+    //var myApp = null;
+    (function () {
+
+        angular.module('myApp', [])
+          .controller('ImageController', function ($scope) {
+              console.log('MainController');
+
+              $scope.imageCropResult = null;
+              $scope.showImageCropper = false;
+
+              $scope.$watch('imageCropResult', function (newVal) {
+                  if (newVal) {
+                      console.log('imageCropResult', newVal);
+                  }
+
+              });
+
+          });
+
+    })();
+</script>
+<!-- REQUIRED 3/3 - the image crop directive (don't hotlink like this, download your own copy!) -->
+@*<script src="http://raw.githubusercontent.com/andyshora/angular-image-crop/master/image-crop.js"></script>*@
+<style>
+    /* Styles for this demo page */
+    body {
+        font-size: 12px;
+        font-family: Helvetica, Arial;
+        background: white;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+    a {
+        text-decoration: underline;
+        color: blue;
+        cursor: pointer;
+    }
+
+    hr {
+        border: none;
+        height: 1px;
+        width: 80%;
+        background: rgba(0,0,0,.3);
+        margin: 40px auto;
+    }
+
+    .result-datauri {
+        width: 300px;
+        height: 100px;
+        font-size: 11px;
+        line-height: 15px;
+        padding: 5px;
+        border: 1px solid black;
+        clear: both;
+        display: block;
+        margin: 20px auto;
+    }
+</style>
+<h2>Details</h2>
+<div ng-app="myApp">
+    <div ng-controller="ImageController">
+        <h2>Angular Image Cropper</h2>
+        @* <p>An AngularJS Directive by <a href="https://twitter.com/andyshora">@andyshora</a></p>*@
+        <hr>
+        <p ng-hide="imageCropResult||imageCropStep!=1">Let's get started &rarr; <a ng-click="showImageCropper=true;imageCropStep=1">Crop Image</a></p>
+        <p ng-show="imageCropResult">Wanna start over? &rarr; <a ng-click="imageCropResult=null;imageCropStep=1">Reset</a></p>
+        <image-crop data-width="300"
+                    data-height="300"
+                    data-shape="circle"
+                    data-step="imageCropStep"
+                    data-result="imageCropResult"
+                    ng-show="showImageCropper"></image-crop>
+        <hr>
+        <h2>Result</h2>
+        <div ng-show="imageCropResult">
+            <img ng-src="{{ imageCropResult }}" alt="The Cropped Image">
+            <p>And this is the actual data uri which represents the cropped image, which you'll then upload to your server:</p>
+            <textarea class="result-datauri">{{ imageCropResult }}</textarea>
+        </div>
+
+        <p ng-hide="imageCropResult">Not cropped yet</p>
+    </div>
+</div>

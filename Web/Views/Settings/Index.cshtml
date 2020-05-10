@@ -1,0 +1,142 @@
+﻿@using ChurchSMS.Models
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>Questions Pool
+        <small>Detail</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Index", "Survey")"><i class="fa fa-list"></i>&nbsp;Surveys</a>
+    <a class="btn btn-default" data-toggle="modal" data-target="#add-question-modal"><i class="fa fa-plus-circle"></i>&nbsp;Add Question</a>
+}
+
+<div ng-app="" ng-controller="QuestionsController">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><b>Survey Questions <span id="qty" class="badge bg-green">@ViewBag.Qty</span></b></h3>
+                    <div class="box-tools">
+                        <div class="pull-right">
+                          
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <table id="questions" class="table table-hover table-condensed">
+                        <thead class="bg-orange">
+                            <tr>
+                                <th></th>
+                                <th>
+                                    Question
+                                </th>
+                                <th>
+                                    Type
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in (List<QuestionPoolViewModel>)ViewData["Questions"])
+                        {
+
+                            <tr>
+                                <td></td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Question)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Type)
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-default" ng-click="delete_question($event,@item.QuestionPoolID)"><i class="fa fa-trash-o"></i>&nbsp;Delete</a>
+                                </td>
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade in" id="add-question-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-question-circle"></i>Add Question</h4>
+                </div>
+                <form action="@Url.Action("Create", "Questions")" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">Select Type</span>
+                                @Html.DropDownList("Type", null, null, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="Question" class="form-control"></textarea>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class=""></i>Close</button>
+                        <button type="submit" class="btn btn-primary pull-left"><i class="fa fa-plus"></i>Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#questions').DataTable();
+    });
+</script>
+<script>
+    //'use strict';
+
+    //angular.module('', ['myApp.directives']);
+
+    function QuestionsController($scope, $http) {
+
+         $scope.delete_question = function ($event,item) {
+
+             var cur = $(event.target).parent().parent();
+
+             bootbox.dialog({
+                message: "Are you sure you want delete this question?",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("DeleteQuestionPool", "Questions")", { id: item}).success(function() {
+                                cur.remove();
+                                var value = $("#qty").text();
+                                var update = (parseInt(value) - 1).toString();
+                                $("#qty").text(update);
+                            });
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                        }
+                    }
+                }
+            });
+        };
+    }
+</script>
+

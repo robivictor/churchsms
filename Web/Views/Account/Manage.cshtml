@@ -1,0 +1,25 @@
+﻿@using ChurchSMS_offline.Models;
+@using Microsoft.AspNet.Identity;
+@{
+    ViewBag.Title = "Manage Account";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+@section header {
+    <h1>
+        My Account
+        <small>Change Password </small>
+    </h1>
+}
+
+
+
+<div ng-app="" ng-contoller="registerController" class="box box-primary">
+    <p class="alert-success">@ViewBag.StatusMessage</p>
+    @(ViewBag.HasLocalPassword ? Html.Partial("_ChangePasswordPartial") : Html.Partial("_SetPasswordPartial"))
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

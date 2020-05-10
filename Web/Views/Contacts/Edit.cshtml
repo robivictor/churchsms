@@ -1,0 +1,763 @@
+﻿@model DataModels.Models.User
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    @*    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove-circle"></span></button>*@
+    <h1>
+        <i class="fa fa-user"></i> Member
+        <small>@Model.Name @Model.LastName </small>
+    </h1>
+}
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("MessageHistory", "Contacts", new { id = Model.UserId })"><span class="fa fa-print"></span>&nbsp;Print</a>
+    <a class="btn btn-default" href="@Url.Action("MessageHistory", "Contacts", new { id = Model.UserId })"><span class="fa fa-envelope"></span>&nbsp;SMS</a>
+    @*<a class="btn btn-default" ng-click="RemoveDisable()"><span class="fa fa-list"></span>&nbsp;Edit</a>*@
+    <a class="btn btn-default" href="@Url.Action("Index", "Contacts")"><span class="fa fa-list"></span>&nbsp;Contacts</a>
+    @if (ViewBag.Previous != null)
+    {
+        <a class="btn btn-default" href="@Url.Action("Edit", "Contacts", new { id = ViewBag.Previous, activetab = ViewBag.Active })"><span class="fa fa-arrow-circle-left"></span></a>
+    }
+    @if (ViewBag.Next != null)
+    {
+        <a class="btn btn-default" href="@Url.Action("Edit", "Contacts", new { id = ViewBag.Next, activetab = ViewBag.Active })"><span class="fa fa-arrow-circle-right"></span></a>
+    }
+}
+
+<div ng-app="myApp" ng-controller="ContactController" class="box box-primary">
+
+    <div class="box-header">
+    </div>
+    <div class="box-body">
+        <div class="row center-block">
+            <div class="col-md-3">
+                <div id="crop-avatar">
+                    @if (Model.ImagePath != null && File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"profiles", Model.ImagePath)))
+                    {
+                        <div class="avatar-view" title="Change Profile Picture">
+                            <img src="~/profiles/@Model.ImagePath" alt="Avatar">
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="avatar-view" title="Change Profile Picture">
+                            <img src="~/Content/img/avatar2.png" alt="Avatar">
+                        </div>
+                    }
+                    <div class="modal fade" id="avatar-modal" aria-hidden="true" aria-labelledby="avatar-modal-label" role="dialog" tabindex="-1">
+                        <div class="modal-browse modal-lg">
+                            <div class="modal-content">
+                                <form class="avatar-form" action="@Url.Action("UploadFile","Contacts",new{id=@Model.UserId})" enctype="multipart/form-data" method="post">
+                                    <div class="modal-header">
+                                        <button class="close" data-dismiss="modal" type="button">&times;</button>
+                                        <h4 class="modal-title" id="avatar-modal-label">Change Profile Picture</h4>
+                                    </div>
+                                    <div class="modal-body ">
+                                        <div class="avatar-body row">
+                                            <!-- Upload image and data -->
+                                            <!-- Crop and preview -->
+                                            <div class="col-md-9">
+                                                <div class="avatar-upload ">
+                                                    <input class="avatar-src" name="avatar_src" type="hidden">
+                                                    <input class="avatar-data" name="avatar_data" type="hidden">
+                                                    @*<span class="input-group-btn">*@
+                                                    <span class="btn btn-primary btn-file">
+                                                        Browse… <input class="avatar-input" id="avatarInput" name="avatar_file" type="file">
+                                                    </span>
+                                                    @*</span>*@
+                                                </div>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <div class="avatar-wrapper"></div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="avatar-preview preview-lg"></div>
+                                                <div class="avatar-preview preview-md"></div>
+                                                <div class="avatar-preview preview-sm"></div>
+                                            </div>
+
+                                            @*<div class="row">*@
+                                            @*<div class="col-md-9">
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-primary" data-method="setDragMode" data-option="move" type="button" title="Move"><span class="docs-tooltip" data-toggle="tooltip" title=""><span class="fa fa-arrows-alt"></span></span></button>
+                                                        <button class="btn btn-primary" data-method="setDragMode" data-option="crop" type="button" title="Crop"><span class="docs-tooltip" data-toggle="tooltip" title=""><span class="fa fa-crop"></span></span></button>
+                                                        <button class="btn btn-primary" data-method="zoom" data-option="0.1" type="button" title="Zoom In"><span class="docs-tooltip" data-toggle="tooltip" title=""><span class="fa fa-search-plus"></span></span></button>
+                                                        <button class="btn btn-primary" data-method="zoom" data-option="-0.1" type="button" title="Zoom Out"><span class="docs-tooltip" data-toggle="tooltip" title=""><span class="fa fa-search-minus"></span></span></button>
+                                                        <button class="btn btn-primary" data-method="rotate" data-option="-2" type="button" title="Rotate Left"><span class="docs-tooltip" data-toggle="tooltip" title=""><span class="fa fa-rotate-left"></span></span></button>
+                                                        <button class="btn btn-primary" data-method="rotate" data-option="2" type="button" title="Rotate Right"><span class="docs-tooltip" data-toggle="tooltip" title=""><span class="fa fa-rotate-right"></span></span></button>
+                                                        <button class="btn btn-primary" data-method="reset" type="button" title="Reset"><span class="docs-tooltip" data-toggle="tooltip" title=""><span class="fa fa-refresh"></span></span></button>
+                                                    </div>
+                                                </div>*@
+                                            <div class="col-md-9" style="margin:5px auto">
+                                                <button class="btn btn-primary avatar-save" type="submit">Done</button>
+                                            </div>
+                                            @*</div>*@
+                                        </div>
+                                    </div>
+                                    <!-- <div class="modal-footer">
+                                             <button class="btn btn-default" data-dismiss="modal" type="button">Close</button>
+                                         </div> -->
+                                </form>
+                            </div>
+                        </div>
+                        <div class="loading" aria-label="Loading" role="img" tabindex="-1"></div>
+                     </div><!-- /.modal -->
+                    <!-- Loading state -->
+                   
+                 </div>
+
+               
+                
+    @*<a href="#" class="thumbnail">
+                        <img style="width: 100%; height:100%" src="~/Content/img/avatar.png" alt="Profile Picture">
+                    </a>*@
+                @*<div class="fileinput fileinput-new" data-provides="fileinput">
+                        <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 240px; height: 180px;"></div>
+                        <div>
+                            <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" name="..."></span>
+                            <a href="#" class="btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
+                        </div>
+                    </div>*@
+                <ul class="nav nav-pills nav-stacked">
+                    <li id="personal_tab"> <a href="#personal" role="tab" data-toggle="tab"><i class="fa fa-user"></i>&nbsp;Personal Detail</a></li>
+                    <li id="contacts_tab"> <a href="#contacts" role="tab" data-toggle="tab"><i class="fa fa-home"></i>&nbsp;Contact Address</a></li>
+                    @*<li id="family_tab"> <a href="#family" role="tab" data-toggle="tab"><i class="fa fa-umbrella"></i>&nbsp;Family</a></li>
+                    <li id="history_tab"> <a href="#history" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i>&nbsp;History</a></li>*@
+                    <li id="membership_tab"> <a href="#membership" role="tab" data-toggle="tab"><i class="fa fa-users"></i>&nbsp;Membership and Gifts</a></li>
+                </ul>
+            </div>
+
+            <div class="tab-content">
+                <div id="personal" class="tab-pane">
+                    <div class="col-md-9 ">
+                        <div class="tab-header">
+                            <p class=" text-primary">Personal Detail</p>
+                        </div>
+                    </div>
+                    @using (Html.BeginForm())
+                    {
+                        <div class="col-md-4">
+                            @Html.HiddenFor(model => model.UserId)
+                            @Html.HiddenFor(model => model.ImagePath)
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Name, "First name")
+                                @Html.TextBoxFor(model => model.Name, new { @class = "form-control", @placeholder = "First Name", @required = "" })
+                                @Html.ValidationMessageFor(model => model.Name)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.MiddleName, "Middle name")
+                                @Html.TextBoxFor(model => model.MiddleName, new { @class = "form-control", @placeholder = "Middle Name", @required = "" })
+                                @Html.ValidationMessageFor(model => model.MiddleName)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.LastName, "Last name")
+                                @Html.TextBoxFor(model => model.LastName, new { @class = "form-control", @placeholder = "Last Name", @required = "" })
+                                @Html.ValidationMessageFor(model => model.LastName)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.PhoneNumber, "Mobile number")
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-phone"></i>+251
+                                    </div>
+                                    @*<input class="form-control" id="PhoneNumber" required="" name="PhoneNumber" placeholder="Phone Number" type="text" value="Hailu" data-inputmask='"mask": "(999) 99-9999"' data-mask>*@
+                                    <input class="form-control" id="PhoneNumber" required="" name="PhoneNumber" placeholder="Phone Number" type="text" value="@Model.PhoneNumber.Substring(4)">
+                                </div>
+                                <p class="text-orange">Phone number should be like: (935) 93-2263 </p>
+                                @Html.ValidationMessageFor(model => model.PhoneNumber)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.BirthDate, "Birth date")
+                                <div class='input-group date' id='datetimepicker1'>
+                                    <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                                    @Html.TextBoxFor(model => model.BirthDate, new { @class = "form-control", @placeholder = "Birth Date" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.BirthDate)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.IsMale, "Gender")
+                                @Html.EditorFor(model => model.IsMale, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.IsMale)
+                            </div>
+                         
+                        </div>
+                        <div class="col-md-5 ">
+                               <div class="form-group">
+                                @Html.LabelFor(model => model.OccupationID, "Occupation")
+                                @Html.DropDownList("OccupationID", null, null, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.Occupation)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Description, "About")
+                                @Html.TextAreaFor(model => model.Description, new { @class = "form-control", @placeholder = "Description", @style = "height: 120px" })
+                                @Html.ValidationMessageFor(model => model.Description)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ReferenceID, "Reference No")
+                                @Html.TextBoxFor(model => model.ReferenceID, new { @class = "form-control", @placeholder = "Reference Number" })
+                                @Html.ValidationMessageFor(model => model.ReferenceID)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Status)
+                                @Html.DropDownList("Status", null, null, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.Status)
+                            </div>
+
+                            <button type="submit" class="btn btn-primary pull-right"><i class="fa fa-save"></i>&nbsp;Save</button>
+                        </div>
+                    }
+                </div>
+                <div id="contacts" class="tab-pane">
+                    <div class="col-md-9 ">
+                        <div class="tab-header">
+                            <p class=" text-primary">Contact Address</p>
+                        </div>
+                    </div>
+                    @using (Html.BeginForm("Contactaddress", "Contacts", new { userId = Model.UserId }))
+                    {
+                        <div class="col-md-4">
+                            @*@Html.HiddenFor(model => model.UserId)*@
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Address.Subcity, "Subcity")
+                                @Html.TextBoxFor(model => model.Address.Subcity, new { @class = "form-control", @placeholder = "Subcity" })
+                                @Html.ValidationMessageFor(model => model.Address.Subcity)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Address.Subrub, "Subrub")
+                                @Html.TextBoxFor(model => model.Address.Subrub, new { @class = "form-control", @placeholder = "Subrub" })
+                                @Html.ValidationMessageFor(model => model.Address.Subrub)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Address.Kebele, "Kebele")
+                                @Html.TextBoxFor(model => model.Address.Kebele, new { @class = "form-control", @placeholder = "Kebele" })
+                                @Html.ValidationMessageFor(model => model.Address.Kebele)
+                            </div>
+                            <div class="form-group">
+                                <label for="HouseNumber">HouseNumber</label>
+                                @Html.TextBoxFor(model => model.Address.HouseNumber, new { @class = "form-control", @placeholder = "House Number" })
+                                @Html.ValidationMessageFor(model => model.Address.HouseNumber)
+                            </div>
+
+                            <div class="form-group">
+                                <label for="City">City</label>
+                                @Html.TextBoxFor(model => model.Address.City, new { @class = "form-control", @placeholder = "City" })
+                                @Html.ValidationMessageFor(model => model.Address.City)
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Country">Country</label>
+                                @Html.TextBoxFor(model => model.Address.Country, new { @class = "form-control", @placeholder = "Country" })
+                                @Html.ValidationMessageFor(model => model.Address.Country)
+                            </div>
+                        </div>
+                        <div class="col-md-5 ">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        @@
+                                    </div>
+                                    @Html.TextBoxFor(model => model.Address.Email, new { @class = "form-control", @placeholder = "Email" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Address.Email)
+                            </div>
+
+                            <div class="form-group">
+                                <label for="WorkPhone">Work Phone</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-phone-square"></i>
+                                    </div>
+                                    @Html.TextBoxFor(model => model.Address.WorkPhone, new { @class = "form-control", @placeholder = "Work Phone" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Address.WorkPhone)
+                            </div>
+
+                            <div class="form-group">
+                                <label for="HomePhone">Home Phone</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="glyphicon glyphicon-phone-alt"></i>
+                                    </div>
+                                    @Html.TextBoxFor(model => model.Address.HomePhone, new { @class = "form-control", @placeholder = "Home Phone" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Address.HomePhone)
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Post">Postal Address</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-envelope"></i>
+                                    </div>
+                                    @Html.TextBoxFor(model => model.Address.Post, new { @class = "form-control", @placeholder = "P.O.Box" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Address.Post)
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Facebook">Facebook</label>
+
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-facebook-square"></i>
+                                    </div>
+                                    @Html.TextBoxFor(model => model.Address.Facebook, new { @class = "form-control", @placeholder = "Facebook name" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Address.Facebook)
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Twitter">Twitter</label>
+                                <div class="input-group">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-twitter"></i>
+                                    </div>
+                                    @Html.TextBoxFor(model => model.Address.Twitter, new { @class = "form-control", @placeholder = "Twitter name" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.Address.Twitter)
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary pull-right"><i class="fa fa-save"></i>&nbsp;Save</button>
+                        </div>
+                    }
+                </div>
+                @*<div id="family" class="tab-pane">
+                        <div class="col-md-9">
+                            <div class="tab-header">
+                                <p class=" text-primary">Family</p>
+                            </div>
+                        </div>
+
+                    </div>*@
+                @*<div id="history" class="tab-pane">
+                    <div class="col-md-9 ">
+                        <div class="tab-header">
+                            <p class=" text-primary">History</p>
+                        </div>
+                    </div>
+                    @using (Html.BeginForm("ContactHistory", "Contacts", new { userId = Model.UserId }))
+                    {
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.History.SalvationDate, "When were you born again?")
+                                <div class='input-group date' id='datetimepicker_salvation'>
+                                    <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                                    @Html.TextBoxFor(model => model.History.SalvationDate, new { @class = "form-control", @placeholder = "Salvation Date" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.BirthDate)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.History.OriginalChurch, "Previous Church")
+                                @Html.TextBoxFor(model => model.History.OriginalChurch, new { @class = "form-control", @placeholder = "Your Previous Church", @required = "" })
+                                @Html.ValidationMessageFor(model => model.History.OriginalChurch)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.History.BabtisimDate, "Date of Babtisim")
+                                <div class='input-group date' id='datetimepicker_babtisim'>
+                                    <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                                    @Html.TextBoxFor(model => model.History.BabtisimDate, new { @class = "form-control", @placeholder = "Date of Babtisim" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.History.BabtisimDate)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.History.JoinedDate, "Joining Date")
+                                <div class='input-group date' id='datetimepicker_join'>
+                                    <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                                    @Html.TextBoxFor(model => model.History.JoinedDate, new { @class = "form-control", @placeholder = "Date of Entry" })
+                                </div>
+                                @Html.ValidationMessageFor(model => model.History.JoinedDate)
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.History.WithOfficialLetter, "Do you have a leave letter?")
+                                @Html.CheckBoxFor(model => model.History.WithOfficialLetter, new { @class = "form-control", @placeholder = "", @required = "" })
+                                @Html.ValidationMessageFor(model => model.History.WithOfficialLetter)
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.History.LetterReason, "Reason?")
+                                @Html.TextAreaFor(model => model.History.LetterReason, new { @class = "form-control", @placeholder = "Reason", @required = "" })
+                                @Html.ValidationMessageFor(model => model.History.LetterReason)
+                            </div>
+                            <button type="submit" class="btn btn-primary pull-right"><i class="fa fa-save"></i>&nbsp;Save</button>
+                        </div>
+                    }
+                </div>*@
+                <div id="membership" class="tab-pane">
+                    <div class="col-md-9">
+                        <div class="tab-header">
+                            <p class=" text-primary">Memberships</p>
+                        </div>
+                        <div style="margin-bottom: 10px">
+                            <span>
+                                <b>@Model.Name</b> has joined <b>{{joined.length}}</b> groups and still can join <b>{{unjoinedGroups.length}}</b> others.
+                            </span>
+                        </div>
+                        <div class="btn-group" ng-hide="unjoinedGroups.length==0">
+                            <button type="button"
+                                    multi-select
+                                    input-model="unjoinedGroups"
+                                    button-label="Name"
+                                    item-label="Name"
+                                    tick-property="Selected"
+                                    selection-mode="multiple"
+                                    max-labels="0"
+                                    default-label="Select Groups"
+                                    max-height="180px"></button>
+                            <button type="button" class="btn btn-default pull-right" ng-click="joinGroups()"><span class="fa fa-plus-circle"></span>&nbsp;Join</button>
+                        </div>
+                        <hr />
+                        <div>
+                            @*<span class="btn btn-lg btn-primary"></span>*@
+                            <div ng-repeat="g in joined" class="btn-group" style="margin: 2px">
+                                <button class="btn btn-primary" ng-click="GroupDetail(g)">
+                                    {{g.Name}}&nbsp;<span class="badge bg-blue">{{g.Count}}</span>
+                                </button>
+                                <button type="button" class="btn btn-primary" ng-click="remove(g)"><span class="fa fa-minus-circle"></span></button>
+                            </div>
+                        </div>
+                        <hr />
+
+                        @*<div style="margin-bottom: 10px">
+                            <span>
+                                <b>@Model.Name</b> has <ng-pluralize count="added.length" when="{'0':'no registered gift ','one':'1 gift','other':'{} gifts'}">
+                                </ng-pluralize>.
+                            </span>
+                        </div>
+                        <div class="btn-group" ng-hide="unaddedGifts.length==0">
+                            <button type="button"
+                                    multi-select
+                                    input-model="unaddedGifts"
+                                    button-label="GiftName"
+                                    item-label="GiftName"
+                                    tick-property="Selected"
+                                    selection-mode="multiple"
+                                    max-labels="0"
+                                    default-label="Select Groups"
+                                    max-height="180px"></button>
+                            <button type="button" class="btn btn-default pull-right" ng-click="AddGifts()"><span class="fa fa-plus-circle"></span>&nbsp;Join</button>
+                        </div>
+                        <hr />
+                        <div>
+                            
+                            <div ng-repeat="g in added" class="btn-group" style="margin: 2px">
+                                <button class="btn btn-warning">
+                                    {{g.GiftName}}
+                                </button>
+                                <button type="button" class="btn btn-warning" ng-click="removeGift(g)"><span class="fa fa-minus-circle"></span></button>
+                            </div>
+                        </div>
+                        <hr />*@
+
+
+                    </div>
+                </div>
+                @*<div id="preference" class="tab-pane">
+                        <div class="col-md-9">
+                            <div class="tab-header">
+                                <p class=" text-primary">Preference</p>
+                            </div>
+                        </div>
+                    </div>*@
+
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+<script type="text/javascript">
+    $(function () {
+        //$("input[type=\"checkbox\"], input[type=\"radio\"]").not("[data-switch-no-init]").bootstrapSwitch();
+        $("#IsMale").bootstrapSwitch({
+            onText: " M <i class='fa fa-male'></i>",
+            offText: " F <i class='fa fa-female'></i>",
+            handleWidth: "200",
+            size: "normal",
+            //offColor: 'warning'
+        });
+
+        $("#History_WithOfficialLetter").bootstrapSwitch({
+            //onText: " M <i class='fa fa-male'></i>",
+            //offText: " F <i class='fa fa-female'></i>",
+            handleWidth: "200",
+            //size: "normal",
+            //offColor: 'warning'
+        });
+        $("[data-mask]").inputmask();
+    });
+</script>
+<script type="text/javascript">
+    $(function () {
+        var current = '@ViewBag.Active';
+        switch ('@ViewBag.Active') {
+            case '1':
+                $("#personal_tab").addClass("active");
+                $("#personal").addClass("active");
+                break;
+            case '2':
+                $("#contacts_tab").addClass("active");
+                $("#contacts").addClass("active");
+                break;
+                //case '3':
+                //    $("#family_tab").addClass("active");
+                //    $("#family").addClass("active");
+                //    break;
+            case '4':
+                $("#history_tab").addClass("active");
+                $("#history").addClass("active");
+                break;
+            case '5':
+                $("#membership_tab").addClass("active");
+                $("#membership").addClass("active");
+                break;
+            default:
+                $("#personal_tab").addClass("active");
+                $("#personal").addClass("active");
+        }
+        $(".checkBoxContainer").slimscroll({
+            //height: "150px",
+            alwaysVisible: false,
+            size: "8px"
+        }).css("width", "100%");
+
+        $('#datetimepicker1').datepicker({
+            //format: "dd/mm/yyyy",
+            weekStart: 1,
+            todayBtn: "linked",
+            calendarWeeks: true,
+            todayHighlight: true,
+            autoclose: true,
+        });
+
+        $('#datetimepicker_babtisim').datepicker({
+            //format: "dd/mm/yyyy",
+            weekStart: 1,
+            todayBtn: "linked",
+            calendarWeeks: true,
+            todayHighlight: true,
+            autoclose: true,
+        });
+
+        $('#datetimepicker_salvation').datepicker({
+            //format: "dd/mm/yyyy",
+            weekStart: 1,
+            todayBtn: "linked",
+            calendarWeeks: true,
+            todayHighlight: true,
+            autoclose: true,
+        });
+
+        $('#datetimepicker_join').datepicker({
+            //format: "dd/mm/yyyy",
+            weekStart: 1,
+            todayBtn: "linked",
+            calendarWeeks: true,
+            todayHighlight: true,
+            autoclose: true,
+        });
+    });
+    var options = {
+        size: 'small'
+    };
+    // $("#IsMale").bootstrapSwitch();
+</script>
+
+
+<script>
+    var myApp = angular.module('myApp', ['multi-select']);
+    var MemberID = '@Model.UserId';
+
+    myApp.controller('ContactController', [
+        '$scope', '$http', function ($scope, $http) {
+
+            $scope.unjoinedGroups = [];
+            $scope.tobejoinedgroups = [];
+            $scope.joined = [];
+
+            $scope.unaddedGifts = [];
+            $scope.tobeaddedGifts = [];
+            $scope.added = [];
+
+            @*//Contact Address Form Submnit
+            $scope.submitAddressForm = function (isValid) {
+                // check to make sure the form is completely valid
+                //toastr.error("An error occured, try again!");
+
+                if (isValid) {
+                    $http.post("@Url.Action("SaveContactAddress","Data")", { address: $scope.address, memberId: MemberID }).success(function () {
+                        toastr.success('Thank you for requesting.<br/> We will get back to you soon.');
+                        $scope.address = "";
+                        $scope.AddressForm.$setPristine();
+                    }).error(function () {
+                        toastr.error("An error occured, try again!");
+                    });
+                }
+
+            };*@
+
+            $scope.getJoinedGroups = function () {
+                $http.post("@Url.Action("GetJoinedGroups", "Data")", { memberId: MemberID }).success(function (data) {
+                    $scope.joined = data;
+                }).error(function () {
+                    $scope.joined = null;
+                });
+            }
+
+            $scope.getUnjoinedGroups = function () {
+                $http.post("@Url.Action("GetUnjoinedGroups", "Data")", { memberId: MemberID }).success(function (data) {
+                    $scope.unjoinedGroups = data;
+                }).error(function () {
+
+                });
+            }
+
+            $scope.getUnjoinedGroups();
+            $scope.getJoinedGroups();
+
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "progressBar": false,
+                "positionClass": "toast-bottom-right",
+                "onclick": null,
+                "showDuration": "500",
+                "hideDuration": "500",
+                "timeOut": "2000",
+                "extendedTimeOut": "100",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+
+            $scope.joinGroups = function (isValid) {
+                angular.forEach($scope.unjoinedGroups, function (value, key) {
+                    if (value.Selected == true) {
+                        $scope.tobejoinedgroups.push(value);
+                    }
+                });
+
+                $http.post("@Url.Action("Join", "Data")", { tobejoined: $scope.tobejoinedgroups, memberId: MemberID }).success(function () {
+                    toastr.success('You have Joined ' + $scope.tobejoinedgroups.length + ' new groups.');
+                    $scope.getUnjoinedGroups();
+                    $scope.getJoinedGroups();
+                    $scope.tobejoinedgroups = [];
+
+                }).error(function () {
+                    toastr.error("An error occured, try again!");
+                });
+
+            };
+
+
+
+            $scope.GroupDetail = function (group) {
+                //alert(group.ID);
+                window.location = "@Url.Action("Details", "Groups")" + "/" + group.ID;
+
+            }
+
+            $scope.remove = function (group) {
+                bootbox.dialog({
+                    message: "Are you sure you want unjoin this member from the group " + group.Name + "?",
+                    title: "Confirm to Unjon",
+                    buttons: {
+                        danger: {
+                            label: "Unjoin",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("Remove", "Groups")", { groupId: group.ID, id: MemberID }).success(function () {
+                                    $scope.getUnjoinedGroups();
+                                    $scope.getJoinedGroups();
+                                    toastr.success('You just unjoined this member from the group ' + group.Name + '.');
+                                });
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+
+                            }
+                        }
+                    }
+                });
+            };
+
+
+            //Gifts
+            $scope.getAddedGifts = function () {
+                $http.post("@Url.Action("GetAddedGifts", "Data")", { memberId: MemberID }).success(function (data) {
+                    $scope.added = data;
+                }).error(function () {
+                    $scope.joined = null;
+                });
+            }
+            $scope.getUnaddedGifts = function () {
+                $http.post("@Url.Action("GetUnAddedGifts", "Data")", { memberId: MemberID }).success(function (data) {
+                    $scope.unaddedGifts = data;
+                }).error(function () {
+
+                });
+            }
+
+            $scope.AddGifts = function () {
+                angular.forEach($scope.unaddedGifts, function (value, key) {
+                    if (value.Selected == true) {
+                        $scope.tobeaddedGifts.push(value);
+                    }
+                });
+
+                $http.post("@Url.Action("AddGift", "Data")", { tobeadded: $scope.tobeaddedGifts, memberId: MemberID }).success(function () {
+                    toastr.success('You have Joined ' + $scope.tobeaddedGifts.length + ' new groups.');
+                    $scope.getUnaddedGifts();
+                    $scope.getAddedGifts();
+                    $scope.tobeaddedGifts = [];
+
+                }).error(function () {
+                    toastr.error("An error occured, try again!");
+                });
+
+            };
+
+            $scope.removeGift = function (gift) {
+                bootbox.dialog({
+                    message: "Are you sure you want remove this gift?",
+                    title: "Confirm to Remove",
+                    buttons: {
+                        danger: {
+                            label: "Remove",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("RemoveGift", "Data")", { memberId: MemberID, giftId: gift.GiftId }).success(function () {
+                                    $scope.getUnaddedGifts();
+                                    $scope.getAddedGifts();
+                                    $scope.tobeaddedGifts = [];
+                                    toastr.success('You just removed ' + gift.GiftName + ' gift from this member.');
+                                });
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+
+                            }
+                        }
+                    }
+                });
+            };
+
+            $scope.getAddedGifts();
+            $scope.getUnaddedGifts();
+
+        }]);
+
+</script>

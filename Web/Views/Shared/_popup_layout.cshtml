@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - SurveySMS</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    <link href="../../Content/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/css/AdminLTE.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/css/minimal/orange.css" rel="stylesheet" type="text/css" />
+    
+    <script src="../../Scripts/jquery-2.0.2.min.js" type="text/javascript"></script>
+    <script src="../../Content/js/jquery-ui-1.10.3.min.js" type="text/javascript"></script>
+    @Scripts.Render("~/bundles/jquery")
+    <script src="../../Content/js/plugins/iCheck/icheck.min.js" type="text/javascript"></script>
+    <script src="../../Content/js/plugins/input-mask/jquery.inputmask.js" type="text/javascript"></script>
+    <script src="../../Content/js/plugins/input-mask/jquery.inputmask.date.extensions.js" type="text/javascript"></script>
+    <script src="../../Content/js/plugins/input-mask/jquery.inputmask.extensions.js" type="text/javascript"></script>
+</head>
+
+    <body>
+        <div class="box box-primary">
+            <section class="modal-content">
+                <section class="modal-header" style="padding-bottom: 10px">
+                    @RenderSection("header", required: false)
+                </section>
+                @RenderBody()
+            </section>
+        </div>
+
+        @RenderSection("scripts", required: false)
+
+        <script src="../../Content/js/bootstrap.min.js" type="text/javascript"></script>
+        <script src="../../Content/js/AdminLTE/app.js" type="text/javascript"></script>
+        <script src="../../Content/js/AdminLTE/dashboard.js" type="text/javascript"></script>
+    </body>
+</html>

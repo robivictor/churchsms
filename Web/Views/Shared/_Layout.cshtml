@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    @*<script>
+            (function (i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                    m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-58075239-1', 'auto');
+            ga('send', 'pageview');
+        </script>*@
+
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title-ChurchSMS</title>
+    <link href="~/Images/icon.png" rel="shortcut icon" type="image/x-icon" />
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+
+    <!--Stylesheets -->
+    @Styles.Render("~/Content/cssAzure")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/churchsms")
+    <script src="~/signalr/hubs"></script>
+    @Scripts.Render("~/bundles/jqueryval")
+</head>
+
+<body class="skin-black">
+    <header class="header">
+        <a href="@Url.Action("Index","Home")" class="logo">
+            <img style="width: 100%; height: 100%" src="~/Images/ChurchSMSLogo.svg" />
+        </a>
+
+        <nav class="navbar navbar-static-top" role="navigation">
+
+            <a href="#" class="navbar-btn sidebar-toggle" data-toggle="offcanvas" role="button">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown user user-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="glyphicon glyphicon-user text-orange"></i>
+                            <span>@User.Identity.Name <i class="caret"></i></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="user-header bg-orange">
+                                <img src="~/Content/img/avatar2.png" class="img-circle" alt="User Image" />
+                                <p>
+                                    Welcome, @User.Identity.Name!
+                                    <small></small>
+                                </p>
+                            </li>
+
+                            <li class="user-footer">
+
+                                <div class="pull-right">
+
+                                    @if (Request.IsAuthenticated)
+                                    {
+                                        <text>
+                                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <a class="btn btn-sm btn-default" href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-user"></i> Sign out</a>
+                                            }
+                                        </text>
+                                    }
+                                </div>
+                                <div class="pull-left">
+
+                                    @if (Request.IsAuthenticated)
+                                    {
+                                        <a class="btn btn-sm btn-default" href="@Url.Action("Manage","Account")"><i class=""></i>My Account</a>
+                                    }
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="wrapper row-offcanvas-left">
+
+        <aside class="left-side sidebar-offcanvas">
+
+            <section class="sidebar" style="padding-top: 40px">
+                <ul class="sidebar-menu">
+                    <li class="active">
+                        <a href="@Url.Action("Index", "Home")">
+                            <i class="fa fa-th-large fa-lg text-orange"></i><span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="@Url.Action("Index", "Contacts")">
+                            <i class="fa fa-user fa-lg text-orange"></i><span>Contacts</span>
+
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Groups", "Contacts")">
+                            <i class="fa fa-users fa-lg text-orange"></i><span>Groups</span>
+
+                        </a>
+                    </li>
+                    <li class="">
+                        <a href="@Url.Action("Index", "Messages")">
+                            <i class="fa fa-envelope fa-lg text-orange"></i><span>Messages</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Survey")">
+                            <i class="fa fa-edit fa-lg text-orange "></i><span>Polls</span>
+
+                        </a>
+                    </li>
+                    @*<li>
+                        <a href="@Url.Action("Comments", "Messages")">
+                            <i class="fa fa-comments-o fa-lg text-orange"></i><span>Comments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Prayer_requests", "Messages")">
+                            <i class="fa fa-question-circle fa-lg text-orange"></i><span>Prayer Requests</span>
+                        </a>
+                    </li>*@
+
+                    <li class="header"><i class="fa fa-gears fa-lg"></i>Settings</li>
+                    <li>
+                        <a href="@Url.Action("Index", "Services")">
+                            <i class="fa fa-rocket fa-lg text-primary"></i><span>Auto-Responders</span>
+                        </a>
+                    </li>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li>
+                            <a href="@Url.Action("Useraccounts", "Settings")">
+                                <i class="fa fa-users fa-lg text-primary"></i><span>User Accounts</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Lookups", "Settings")">
+                                <i class="fa fa-list-ol fa-lg text-primary"></i><span>Lookups</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </section>
+        </aside>
+        <aside class="right-side">
+            <section class="content-header" style="padding-bottom: 10px">
+
+                @RenderSection("header", required: false)
+                <section class="breadcrumb">
+                    @RenderSection("actions", required: false)
+                </section>
+            </section>
+            <section class="content">
+                @RenderBody()
+            </section>
+        </aside>
+    </div>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

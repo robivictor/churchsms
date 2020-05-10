@@ -1,0 +1,377 @@
+﻿@model DataModels.Models.GroupedMessage
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        To @Model.GroupedMessageName
+        <small>@DateTime.Now</small>
+    </h1>
+}
+<style>
+    .chartWrap {
+        margin: 0 auto;
+        width: 100%;
+        height: 150px;
+    }
+</style>
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Index", "Messages", new { activetab =4})"><i class="fa fa-list"></i>&nbsp;Messages</a>
+    <a class="btn btn-default" id="clean"><i class="fa fa-trash-o"></i>&nbsp;Clean Pending</a>
+}
+
+<div ng-app="myApp" ng-controller="grmsgController">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-body">
+
+                    <table class="table table-condensed">
+                        <tbody class="dt-body-nowrap">
+                            <tr>
+                                <td>To</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.GroupedMessageName)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Recipents</td>
+                                <td>
+                                    @if (Model.Type == 1)
+                                    {
+                                        <p style="margin: 0 0 0px; background: #800080" id="count" class="badge">@Model.Messages.Count</p>
+                                    }
+                                    else
+                                        if (Model.Type == 2)
+                                        {
+                                            <p style="margin: 0 0 0px; background: brown" id="count" class="badge">@Model.Messages.Count</p>
+                                        }
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Message</td>
+                                <td>
+                                    @if (Model.Type == 1)
+                                    {
+                                        <div class="grmsg">`
+                                            @Html.DisplayFor(modelItem => Model.Message)
+                                        </div>
+                                    }
+                                    else
+                                        if (Model.Type == 2)
+                                        {
+                                            <div class="brmsg">
+                                                @Html.DisplayFor(modelItem => Model.Message)
+                                            </div>
+                                        }
+
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <!-- Line chart -->
+                <div class="box-body" ng-hide="messagescount==0">
+                    <highchart id="chart1" config="chartConfig" class="chartWrap"></highchart>
+                </div>
+                <div class="box-body" ng-hide="messagescount>0">
+                    <div class="chartWrap">
+                        <p>There are no recipents for this group message</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                @*<div class="box-header"></div>*@
+                <div class="box-body table-responsive table-condensed" style="padding-top: 5px">
+                    <table id="groupmsgs" class="table table-hover table-condensed table-responsive">
+                        <thead class="bg-light-blue">
+                            <tr>
+                                <th>
+                                    Recipent
+                                </th>
+                                <th>
+                                    Phone Number
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in Model.Messages)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@Url.Action("Edit","Contacts",new{id=item.UserId})">@item.User.Name @item.User.MiddleName</a>
+                                </td>
+                                <td>
+                                    <div>
+                                        <p style="margin:2px"><small style="color: #BAB8B8" class="text-muted"><i class="fa fa-phone"></i> @item.User.PhoneNumber </small></p>
+                                    </div>
+                                </td>
+                                <td style="text-align: left">
+                                    @switch (item.Status)
+                                    {
+                                        case 2:
+                                            <div class="label label-success">
+                                                @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                            </div>
+                                            break;
+                                        case 3:
+                                        <div class="label label-danger">
+                                            @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                        </div>
+                                            break;
+                                        case 5:
+                                        <div class="label label-info">
+                                            @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                        </div>
+                                            break;
+                                        case 7:
+                                        <div class="label label-warning">
+                                            @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                        </div>
+                                            break;
+                                    }
+                                </td>
+
+                                <td class="dt-body-nowrap">
+                                    <a class="btn btn-xs btn-default" ng-click="remove_msg($event,@item.MessageID)"><i class="fa fa-trash-o"></i>&nbsp;Remove</a>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    $(document).ready(function () {
+        $('#groupmsgs').DataTable({
+            stateSave: true
+        });
+
+        $('#clean').click(function () {
+            bootbox.dialog({
+                message: "Are you sure you want clean all pending messages?",
+                title: "Clean",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $.ajax({
+                                type: "POST",
+                                url: "/Messages/Clean/" + '@Model.Id',
+                                //data: { id: '@Model.Id' },
+                                //success: function({});
+                            }).always(function () {
+                                location.reload();
+                            });
+
+                            // $ajax.post("@Url.Action("Remove", "Messages")", { id: item }).success(function () {
+                            //table.row(cur).remove().draw();
+                            //    toastr.success('You just removed a message from this group.');
+                            //alert(table.data().length);
+                            //$('#count').text(table.data().length);
+                            //$('#countm').text(table.data().length);
+                            //});
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(function () {
+        //alert("hello");
+        //Highcharts.setOptions({
+        //    colors: ['#5cb85c', '#f0ad4e']
+        //});
+        @*$('#participation').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false
+            },
+
+            //tooltip: {
+            //    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            //},
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: false
+                }
+            },
+            legend: {
+                align: 'left',
+                layout: 'vertical',
+                verticalAlign: 'top',
+                x: 40,
+                y: 0
+            },
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.2f}</b>%',
+                percentageDecimals: 1
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                type: 'pie',
+                name: 'Participation',
+                data: [
+                    ['Delivered', @ViewBag.Delivered],
+                    ['Pending', @ViewBag.Pending]
+                ]
+            }]
+    });*@
+    });
+</script>
+<script>
+    var myApp = angular.module('myApp', ["highcharts-ng"]);
+    var group = '@Model.Id';
+
+    myApp.controller('grmsgController', [
+        '$scope', '$http', function ($scope, $http) {
+            $scope.temp = [];
+            $scope.PercentageData = [];
+            $scope.messagescount = 1;
+
+            $scope.chartSeries = [
+              {
+                  type: "pie",
+                  name: "Percentage",
+                  data: []
+              }
+            ];
+
+            $scope.getPercentage = function () {
+                $http.post("@Url.Action("Percentage", "Messages")", { id: group }).success(function (data) {
+                    $scope.temp = data;
+                    //toastr.info($scope.temp[0].value);
+                    $scope.PercentageData = [];
+                    $scope.messagescount = 0;
+                    angular.forEach($scope.temp, function (value, key) {
+                        $scope.PercentageData.push([key, value]);
+                        $scope.messagescount += value;
+                    });
+                    //alert($scope.messagescount);
+                    $scope.chartSeries[0].data = $scope.PercentageData;
+                });
+            };
+
+            $scope.getPercentage();
+
+            $scope.chartConfig = {
+                options: {
+                    chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: null,
+                        plotShadow: false
+                        //type: 'pie'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: false
+                            },
+                            showInLegend: false,
+                            animation: true,
+                            colors: ['#5cb85c', '#f0ad4e']
+                        }
+                    }
+                },
+                series: $scope.chartSeries,
+                title: {
+                    text: ''
+                },
+                credits: {
+                    enabled: false
+                },
+                loading: false,
+                size: {}
+            }
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "progressBar": true,
+                "positionClass": "toast-bottom-right",
+                "showDuration": "400",
+                "hideDuration": "1000",
+                "timeOut": "2000",
+                "extendedTimeOut": "5000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+
+            $scope.remove_msg = function ($event, item) {
+                var table = $('#groupmsgs').DataTable();
+                var cur = $(event.target).parent().parent();
+                bootbox.dialog({
+                    message: "Are you sure you want remove this msg?",
+                    title: "Confirm to remove",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("Remove", "Messages")", { id: item }).success(function () {
+                                    table.row(cur).remove().draw();
+                                    $scope.getPercentage();
+                                    toastr.success('You just removed a message from this group.');
+                                    $('#count').text(table.data().length);
+                                });
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                            }
+                        }
+                    }
+                });
+            };
+        }]);
+
+</script>

@@ -1,0 +1,101 @@
+﻿@model DataModels.Models.Survey
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Create New Survey
+        <small>Step one</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Index", "Survey")"><i class="fa fa-list"></i>&nbsp;Surveys</a>
+}
+
+<div class="box box-primary">
+    <div class="box-header">
+        @*<h3 class="box-title">Enter project details</h3>*@
+    </div>
+
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(model => model.Status)
+        <div class="box-body">
+            <div class="row">
+                <div class="col-md-6 box-content">
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.SurveyName, "Survey")
+                        @Html.TextBoxFor(model => model.SurveyName, new { @class = "form-control", @placeholder = "Enter Survey Name", @required = "" })
+                        @Html.ValidationMessageFor(model => model.SurveyName)
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.StartDate, "Start Date")
+                        <div class='input-group date' id='datetimepicker1'>
+                            <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                            @Html.TextBoxFor(model => model.StartDate, new { @class = "form-control", @placeholder = "Select Start date" })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.StartDate)
+                    </div>
+
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.EndDate, "End Date")
+                        <div class='input-group date' id='datetimepicker2'>
+                            <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                            @Html.TextBoxFor(model => model.EndDate, new { @class = "form-control", @placeholder = "Select End date" })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.EndDate)
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Description)
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control", @placeholder = "Enter Survey Description", @style = "height:112px" })
+                        @Html.ValidationMessageFor(model => model.Description)
+                    </div>
+
+                    <div class="">
+                        <div class="pull-right">
+                            <button type="submit" class="btn btn-primary btn-sm pull-left">Next&nbsp; <i class="fa fa-forward"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+<script type="text/javascript">
+    $(function () {
+        $('#datetimepicker1').datepicker({
+            //format: "dd/mm/yyyy",
+            weekStart: 1,
+            todayBtn: "linked",
+            calendarWeeks: true,
+            todayHighlight: true,
+            autoclose: true,
+
+        });
+
+        $('#datetimepicker2').datepicker({
+            //format: "dd/mm/yyyy",
+            weekStart: 1,
+            todayBtn: "linked",
+            calendarWeeks: true,
+            todayHighlight: true,
+            autoclose: true,
+
+        });
+    });
+</script>

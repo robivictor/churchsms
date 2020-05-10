@@ -1,0 +1,214 @@
+﻿@using ChurchSMS.Models
+@model DataModels.Models.Question
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    .chartWrap {
+        margin: 0 auto;
+        width: 100%;
+        height: 220px;
+    }
+</style>
+
+
+@section header {
+    <h1>@Model.Question1
+        <small></small>
+    </h1>
+}
+<div ng-app>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-body">
+
+                    <table class="table table-condensed">
+                        <tbody>
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.Survey.SurveyName)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Survey.SurveyName)
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>@Html.DisplayNameFor(model => model.Question1)</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Question1)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Type</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.QAType.Description)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Response</td>
+                                <td>
+                                    @Html.DisplayFor(model => model.Answers.Count) outof @Model.Survey.Users1.Count
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @if (Model.QAType.TypeId == 1)
+        {
+            <div class="col-md-6">
+                <!-- Line chart -->
+                <div class="box box-primary">
+                    <div class="box-header">
+                        <h4 class="box-title"></h4>
+                    </div>
+                    <div class="box-body">
+                        <div id="percentage" class="chartWrap"></div>
+                    </div>
+                    <!-- /.box-body-->
+                </div>
+                <!-- /.box -->
+            </div>
+        }
+        else
+        {
+
+        }
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title"><b>Answers<span class="badge bg-green">@Model.Answers.Count</span></b></h3>
+                    <div class="box-tools">
+                        <div class="pull-right">
+                            @* @if (Model.Status == 3)
+                            {
+                                <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#add-question-modal"><i class="fa fa-plus"></i>Add Question</a>
+                            }*@
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body" style="padding-top: 0px">
+                    <table class="table table-hover table-condensed">
+                        <thead class="bg-orange">
+                            <tr>
+                                <th></th>
+                                <th>User
+                                </th>
+                                <th>Phone
+                                </th>
+                                <th>Response
+                                </th>
+                                <th>Time
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        @foreach (var item in (List<AnswerViewModel>)ViewData["Answers"])
+                        {
+                        
+                            <tr>
+                                <td></td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Participant)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Phone)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Response)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Time)
+                                </td>
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    'use strict';
+
+    angular.module('myApp', ['myApp.directives']);
+
+    function MyController($scope, $http) {
+       @* $scope.reqparam = { id: '@Model.QuestionId' };
+        $scope.message = "";
+        $scope.questions = [];
+        var onSucess = function (d) {
+            $scope.questions = d;
+            for (var i = 0; i < $scope.questions.length; i++) {
+                $scope.message += ($scope.questions[i] + " ");
+            }
+        };
+
+        $scope.getdata = function () {
+            $http.post("@Url.Action("QuestionsToMessage", "Survey")", $scope.reqparam).success(onSucess);
+        };
+
+        $scope.getdata();*@
+    }
+</script>
+
+<script>
+    $(function () {
+        //alert("hello");
+        $('#percentage').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false
+            },
+
+            //tooltip: {
+            //    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            //},
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.2f}</b>%',
+                percentageDecimals: 1
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                type: 'pie',
+                name: 'Percentage',
+                data: [
+                    ['Yes', @ViewBag.Yes],
+                    ['No', @ViewBag.No]
+
+                ]
+            }]
+        });
+    });
+</script>

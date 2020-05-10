@@ -1,0 +1,190 @@
+﻿@model IEnumerable<DataModels.ViewModels.SurveyViewModel>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+@{
+    ViewBag.Title = "Polls";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Polls
+        <small>Manage Polls</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Create", "Survey")"><i class="fa fa-plus-circle"></i>&nbsp;New Poll</a>
+    <a class="btn btn-default" href="@Url.Action("Index", "Settings")"><i class="fa fa-fw fa-gears"></i><span>Manage Questions</span></a>
+}
+
+<div ng-app="" ng-controller="surveyController" class="box box-primary">
+  
+    <div class="box-body table-responsive table-condensed">
+        <table id="surveys" class="table table-hover table-condensed">
+            <thead class="bg-orange">
+                <tr>
+                    <th></th>
+                    <th>
+                        Survey Name
+                    </th>
+                    <th>
+                        Progress
+                    </th>
+                    <th>
+                        Questions
+                    </th>
+                    <th>
+                        Participants
+                    </th>
+                    <th>
+                        Status
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="small-col">
+                        <input type="checkbox" />
+                    </td>
+                    <td>
+                        <a href="@Url.Action("Details","Survey", new{id=item.SurveyId})">@Html.DisplayFor(modelItem => item.Name)</a>
+                       
+                    </td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="80"
+                                 aria-valuemin="0" aria-valuemax="100" style="width: @item.Progress%">
+                                <span class="sr-only">@item.Progress% Complete</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <p class="badge bg-light-blue">@item.Questions</p>
+                    </td>
+                    <td>
+                        <p class="badge bg-light-blue">@item.Participants</p>
+                    </td>
+                    <td>
+                        @switch (item.Status)
+                        {
+                            case 1:
+                                <div class="label label-success">
+                                    @Html.DisplayFor(modelItem => item.Description)
+                                </div>
+                                break;
+                            case 2:
+                            <div class="label label-default">
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </div>
+                                break;
+                            case 3:
+                            <div class="label label-warning">
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </div>
+                                break;
+                            case 4:
+                            <div class="label label-danger">
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </div>
+                                break;
+                            default:
+
+                            @Html.DisplayFor(modelItem => item.Description)
+
+                                break;
+
+                        }
+
+                    </td>
+                    <td class="pull-left dt-body-nowrap">
+                        @*<a class="btn btn-sm btn-default " href="@Url.Action("Details", "Survey", new { id = item.SurveyId })">Details</a>*@
+                        <a class="btn btn-sm btn-danger" ng-click="delete_survey($event,@item.SurveyId)">Delete</a>
+                        @if (item.Status == 4)
+                        {
+                            <a class="btn btn-sm btn-default " href="@Url.Action("Activate", "Survey", new { id = item.SurveyId })"><i></i>Activate</a>
+                        }
+                        else if (item.Status == 1)
+                        {
+                            <a class="btn btn-sm btn-default" ng-click="close_survey(@item.SurveyId)">Close</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#surveys').DataTable({
+            stateSave: true
+        });
+        $("[name='status-checkbox']").bootstrapSwitch();
+    });
+</script>
+
+<script>
+    function surveyController($scope, $http) {
+        $scope.delete_survey = function ($event, item) {
+            var table = $('#surveys').DataTable();
+            var cur = $(event.target).parent().parent();
+
+            bootbox.dialog({
+                message: "Are you sure you want delete this poll? Deleting a survey will delete all related Poll questions and answers.",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Delete",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("DeleteSurvey", "Survey")", { id: item }).success(function () {
+                                table.row(cur).remove().draw();
+                            });
+
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+        };
+        $scope.close_survey = function (item) {
+            bootbox.dialog({
+                message: "Are you sure you want close this poll? You willn't be a be to reopen it.",
+                title: "Confirm to delete",
+                buttons: {
+                    danger: {
+                        label: "Close",
+                        className: "btn-danger",
+                        callback: function () {
+                            $http.post("@Url.Action("Close", "Survey")", { id: item });
+                            var table = $('#surveys').DataTable();
+                            table.draw();
+                            window.location = "@Url.Action("Index", "Survey")";
+                        }
+                    },
+                    main: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function () {
+                            //Example.show("Primary button");
+                        }
+                    }
+                }
+            });
+        };
+    }
+</script>

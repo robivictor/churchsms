@@ -1,0 +1,36 @@
+{
+  "name": "cropit",
+  "main": "dist/jquery.cropit.js",
+  "description": "Customizable crop and zoom.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Scott Cheng",
+    "email": "me@scottcheng.com",
+    "url": "http://scottcheng.com"
+  },
+  "keywords": [
+    "crop",
+    "zoom",
+    "image editor"
+  ],
+  "homepage": "http://scottcheng.github.io/cropit",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/scottcheng/cropit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/scottcheng/cropit/issues"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-coffeelint": "0.0.10",
+    "grunt-contrib-clean": "^0.5.0",
+    "grunt-contrib-coffee": "^0.10.1",
+    "grunt-contrib-concat": "^0.4.0",
+    "grunt-contrib-jasmine": "^0.6.5",
+    "grunt-contrib-uglify": "^0.5.0",
+    "load-grunt-tasks": "^0.6.0"
+  },
+  "readmeFilename": "README.md"
+}

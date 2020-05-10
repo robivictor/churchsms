@@ -1,0 +1,121 @@
+﻿@model DataModels.Models.User
+@{
+    ViewBag.Title = "Message History";
+}
+@section header {
+    <h1>
+        Message History
+        <small>@Model.Name  (@Model.PhoneNumber)</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn btn-default" href="@Url.Action("Index", "Contacts")"><span class="fa fa-list"></span>&nbsp;Contacts</a>
+}
+
+<div ng-app="" ng-controller="MessagesHistory" class="box box-primary">
+    <div class="box-header">
+        <div class="box-tools">
+            <div class="row">
+                <div class="col-md-6">
+                    <form name="sendMessage" ng-submit="submitForm(sendMessage.$valid)" novalidate style="margin:0px 30px 0px 56px">
+                        <div style="margin-bottom: 2px;" class="form-group">
+                            <textarea style="height: 80px; resize: none" placeholder="Write your message here"  maxlength="160" class="form-control" ng-model="message.body" required></textarea>
+                        </div>
+                        <div class="">
+                            <h4 class="label label-danger">{{160-message.body.length}}</h4> 
+                            <button type="submit" class="btn btn-xs btn-primary pull-right" ng-disabled="sendMessage.$invalid"><i class="fa fa-envelope"></i>&nbsp;Send</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="padding-top: 0px" class="box-body table-responsive table-condensed">
+        <div>
+            <div ng-show="(messages).length==0" class="text-center">
+                <hr/>
+                <p class="text-primary">There is no any conversation with @Model.Name yet!</p>
+            </div>
+            <div ng-show="(messages).length>0" class="text-center">
+                <h3 style="font-size: 14px" class="label label-default ">{{messages.length}} Conversations</h3>
+            </div>
+            <ul class="timeline" ng-show="messages.length>0">
+                
+                <li ng-repeat="message in messages" ng-class="{'timeline-inverted' : message.Direction}" ng-animate="animate">
+                    
+                    <div class="timeline-badge"><i ng-class="{'fa fa-envelope' : !message.Direction,'fa fa-user' : message.Direction}"></i></div>
+                    <div class="timeline-panel">
+                        <div>
+                            <p style="margin:0px"><small class="text-muted"><i class="glyphicon glyphicon-time"></i> {{message.Time| date:'medium'}} </small></p>
+                        </div>
+                        <div class="timeline-body">
+                            <p>{{message.Message}}</p>
+                        </div>
+
+                        <div class="timeline-footer">
+                            <a class="pull-right"><i class="fa fa-minus-circle" ng-click="removeMessage(message)"></i></a>
+                            <a ng-show="!message.Direction" class="pull-left"><span class="label label-success">Delivered</span></a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function MessagesHistory($scope, $http) {
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-right",
+            "onclick": null,
+            "showDuration": "200",
+            "hideDuration": "500",
+            "timeOut": "2000",
+            "extendedTimeOut": "100",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+
+        $scope.messages = [];
+
+        $scope.getMessages = function () {
+            $http.post("@Url.Action("Messages", "Data")", { id: '@Model.UserId' }).success(function (data) {
+                $scope.messages = data;
+            });
+        };
+
+        $scope.getMessages();
+
+        //`````````````````````````````````````````````````
+        $scope.submitForm = function (isValid) {
+            $scope.message.to = '@Model.UserId';
+            if (isValid) {
+                $http.post("@Url.Action("Send_message", "Data")", $scope.message).success(function () {
+                    $scope.getMessages();
+                    toastr.success('Message sent successfully');
+                    $scope.message = "";
+                    $scope.sendMessage.$setPristine();
+                }).error(function () {
+                    toastr.error("An error occured, try again!");
+                });
+            }
+        };
+
+        $scope.removeMessage = function (item) {
+                $http.post("@Url.Action("remove_message", "Data")", item).success(function () {
+                    $scope.getMessages();
+                    toastr.success('Message removed successfully');
+                }).error(function () {
+                    toastr.error("An error occured, try again!");
+                });
+        };
+    }
+
+</script>

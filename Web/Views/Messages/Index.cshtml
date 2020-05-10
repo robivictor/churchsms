@@ -1,0 +1,734 @@
+﻿@using DataModels.Models
+@using DataModels.Models
+@using DataModels.ViewModels
+@model IEnumerable<DataModels.Models.Message>
+@{
+    ViewBag.Title = "Messages";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section header {
+    <h1>
+        Messages
+        <small>Manage Messages</small>
+    </h1>
+}
+
+@section actions {
+    <a class="btn  btn-default" data-toggle="modal" data-target="#compose-modal"><i class="fa fa-envelope"></i>&nbsp;SMS</a>
+    <a class="btn  btn-default" data-toggle="modal" data-target="#groupsms-modal"><i class="fa fa-users"></i>&nbsp;Group SMS</a>
+    <a class="btn  btn-default" data-toggle="modal" data-target="#broadcast-modal"><i class="fa fa-bullhorn"></i>&nbsp;Broadcast SMS</a>
+}
+
+@{
+    var s = (List<Resolution>)ViewData["toberesolved"];
+    var ur = s.Count(y => y.Resolved == false);
+
+    var ml = (List<MessageLog>)ViewData["MsgLog"];
+    var c = ml.Count();
+
+    var msg = (List<GroupedMessageViewModel>)ViewData["GrMsg"];
+    var msgcount = msg.Count();
+}
+
+<div ng-app="myApp" ng-controller="msgController" class="mailbox row">
+    <div class="col-xs-12">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-3 col-sm-4">
+                        <div style="margin-top: 15px;">
+                            <ul class="nav nav-pills nav-stacked">
+                                <li class="header">Categories</li>
+                                <li id="inbox_tab"><a href="#inbox" role="tab" data-toggle="tab"><i class="fa fa-inbox"></i>Inbox<span id="inbox_val" class="badge bg-light-blue pull-right">@c</span></a></li>
+                                <li id="outbox_tab"><a href="#sent" role="tab" data-toggle="tab"><i class="fa fa-mail-forward"></i>Outbox<span id="outbox_val" class="badge bg-yellow pull-right">@Model.Count(m => m.Status == 7)</span></a></li>
+                                <li id="groupedmessages_tab"><a href="#groupedmessages" role="tab" data-toggle="tab"><i class="fa fa-group"></i>Bulk Messages<span id="grmsg_val" class="badge pull-right" style="background: #800080">@msgcount</span></a></li>
+                                <li class="header">Poll Messages</li>
+                                <li id="resolution_tab"><a href="#resolution" role="tab" data-toggle="tab"><i class="fa fa-stethoscope text-red"></i>Resolution<span id="resol_val" class="badge bg-red pull-right">@ur</span></a></li>
+                            </ul>
+                        </div>
+                        @*<div style="margin-top: 15px;">
+                                <ul class="nav nav-stacked">
+                                    <li class="header">Actions</li>
+                                    <li> <a class="btn btn-block btn-primary" data-toggle="modal" data-target="#compose-modal"><i class="fa fa-envelope"></i>&nbsp;Individual SMS</a></li>
+                                    <li><a class="btn btn-block btn-primary" data-toggle="modal" data-target="#groupsms-modal"><i class="fa fa-users"></i>&nbsp;Group SMS</a></li>
+                                    <li><a class="btn btn-block btn-primary" data-toggle="modal" data-target="#broadcast-modal"><i class="fa fa-star"></i>&nbsp;Broadcast SMS</a></li>
+                                </ul>
+                            </div>*@
+                    </div>
+
+                    <div class="col-md-9 col-sm-8">
+                        <!-- Tab panes -->
+                        <div class="tab-content" style="min-height: 580px">
+                            <div class="tab-pane" id="inbox">
+                                <div class="table-responsive">
+                                    <table id="incoming" class="table table-hover">
+                                        <thead class="bg-orange">
+                                            <tr>
+                                                <th>
+                                                    From
+                                                </th>
+                                                <th style="width: 40%">
+                                                    Message
+                                                </th>
+                                                <th>
+                                                    Time
+                                                </th>
+                                                <th>
+                                                    Action
+                                                </th>
+
+                                            </tr>
+                                        </thead>
+                                        @foreach (var item in (List<MessageLog>)ViewData["MsgLog"])
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => item.PhoneNumber)
+                                                </td>
+                                                <td style="width: 40%">
+                                                    <div class="messagein">
+                                                        @Html.DisplayFor(modelItem => item.MessageBody)
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => item.Time)
+                                                </td>
+                                                <td>
+                                                    <a class="btn btn-sm btn-default" ng-click="delete_msg($event,@item.MessageID)">Delete</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="sent">
+
+                                <!-- /.row -->
+                                <div class="table-responsive table-condensed no-padding">
+                                    <!-- THE MESSAGES -->
+                                    <table id="outgoing" class="table table-hover table-condensed">
+                                        <thead class="bg-orange">
+                                            <tr>
+                                                <th>
+                                                    To
+                                                </th>
+                                                <th>
+                                                    Message
+                                                </th>
+                                                @*<th>
+
+                                                    </th>*@
+                                                <th>
+                                                    Status
+                                                </th>
+                                                <th>
+                                                    Sent By
+                                                </th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        @foreach (var item in Model.Where(t => t.Status == 2 || t.Status == 3 || t.Status == 5 || t.Status == 7))
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @item.User.Name @item.User.MiddleName
+                                                    <div>
+                                                        <p style="margin:2px"><small style="color: #BAB8B8"><i class="fa fa-mobile-phone"></i> @item.User.PhoneNumber </small></p>
+                                                    </div>
+                                                </td>
+                                                <td style="width: 40%">
+                                                    <div class="messagein">
+                                                        <div>
+                                                            <p style="margin:2px"><small style="color: #BAB8B8" class="text-muted"><i class="glyphicon glyphicon-time"></i> @item.ScheduledTime </small></p>
+                                                        </div>
+                                                        @Html.DisplayFor(modelItem => item.msg_body)
+                                                    </div>
+                                                </td>
+                                                @*<td>
+                                                        @Html.DisplayFor(modelItem => item.ScheduledTime)
+                                                    </td>*@
+                                                <td style="text-align: left">
+                                                    @switch (item.Status)
+                                                    {
+                                                        case 2:
+                                                            <div class="label label-success">
+                                                                @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                                            </div>
+                                                            break;
+                                                        case 3:
+                                                            <div class="label label-danger">
+                                                                @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                                            </div>
+                                                            break;
+                                                        case 5:
+                                                            <div class="label label-info">
+                                                                @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                                            </div>
+                                                            break;
+                                                        case 7:
+                                                            <div class="label label-warning">
+                                                                @Html.DisplayFor(modelItem => item.MessageStatu.Description)
+                                                            </div>
+                                                            break;
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => item.SentBy)
+                                                </td>
+                                                <td>
+                                                    <a class="btn btn-sm btn-default" ng-click="delete_msg_out($event,@item.MessageID)">Delete</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="resolution">
+                                <div class="table-responsive table-condensed no-padding">
+                                    <!-- THE MESSAGES -->
+                                    <table id="resolve" class="table table-hover table-condensed">
+                                        <thead class="bg-orange">
+                                            <tr>
+                                                <th>
+                                                    From
+                                                </th>
+                                                <th>
+                                                    Survey
+                                                </th>
+                                                <th>
+                                                    Message
+                                                </th>
+                                                <th>
+
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        @foreach (var item in (List<Resolution>)ViewData["toberesolved"])
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => item.User.Name)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => item.Survey.SurveyName)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => item.message)
+                                                </td>
+                                                <td>
+                                                    @if ((bool)(!item.Resolved))
+                                                    {
+                                                        <a class="btn btn-sm btn-danger" href="@Url.Action("Resolve","Resolution", new {id=item.ResolutionID})">Resolve</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="label label-info">Resolved</p>
+                                                    }
+                                                    <a class="btn btn-sm btn-default" ng-click="delete_resl($event,@item.ResolutionID)">Delete</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="groupedmessages">
+                                <div class="table-responsive table-condensed no-padding">
+                                    <!-- THE MESSAGES -->
+                                    <table id="grouped" class="table table-hover table-condensed">
+                                        <thead class="bg-orange">
+                                            <tr>
+                                                <th>
+                                                    To
+                                                </th>
+                                                <th>
+                                                    Message
+                                                </th>
+                                                <th>
+                                                    Percentage
+                                                </th>
+                                                <th>
+
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        @foreach (var item in (List<GroupedMessageViewModel>)ViewData["GrMsg"])
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <a href="@Url.Action("GroupedMessageDeatil","Messages",new {id=item.ID})">@Html.DisplayFor(modelItem => item.Name)</a>
+                                                    <div>
+                                                        <p style="margin:2px"><small style="color: #BAB8B8" class="text-muted"><i class="glyphicon glyphicon-time"></i> @DateTime.Now.ToUniversalTime() </small></p>
+                                                    </div>
+                                                </td>
+                                                <td style="width: 40%">
+                                                    @if (item.Type == 1)
+                                                    {
+                                                        <div class="grmsg">
+                                                            @Html.DisplayFor(modelItem => item.Message)
+                                                        </div>
+                                                    }
+                                                    else
+                                                        if (item.Type == 2)
+                                                        {
+                                                            <div class="brmsg">
+                                                                @Html.DisplayFor(modelItem => item.Message)
+                                                            </div>
+                                                        }
+
+                                                </td>
+                                                <td>
+                                                    <div class="progress">
+                                                        <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="80"
+                                                             aria-valuemin="0" aria-valuemax="100" style="width: @item.Percentage%">
+                                                            <span class="sr-only">@item.Percentage% Complete</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <a class="btn btn-sm btn-default" ng-click="delete_grmsg($event,'@item.ID')">
+                                                        Delete
+                                                        @if (item.Type == 1)
+                                                        {
+                                                            <span class="badge" style="background: #800080">@item.Count </span>
+                                                        }
+                                                        else if (item.Type == 2)
+                                                        {
+                                                            <span class="badge" style="background: brown">@item.Count </span>
+                                                        }
+
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="box-footer clearfix">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade in" id="compose-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-envelope-o"></i>&nbsp;Compose New SMS</h4>
+                </div>
+                <form name="sendsms" ng-submit="submitForm(sendsms.$valid)" novalidate>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div multi-select
+                                 input-model="contacts"
+                                 button-label="Name"
+                                 item-label="Name Phone"
+                                 tick-property="Selected"
+                                 selection-mode="multiple"
+                                 max-labels="5"
+                                 default-label="<span class='fa fa-plus-circle'><span> To"
+                                 max-height="180px">
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
+                            <textarea name="msg_body" id="email_message" class="form-control" ng-trim="false" ng-model="email_message" maxlength="160" placeholder="Message" style="height: 120px; font-size: 15px"></textarea>
+                            <div class="box-footer">
+                                <h4 class="label label-danger">{{160-email_message.length}}</h4>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="submit" class="btn btn-primary" ng-disabled="email_message.length==0 && SelectedCount==0"><i class="fa fa-envelope"></i>&nbsp;Send Message</button>
+                        <button type="button" class="btn btn-danger pull-right" data-dismiss="modal"><i class="fa fa-times"></i>&nbsp;Close</button>
+                        @*<button type="submit" class="btn btn-primary pull-left"><i class="fa fa-envelope"></i>Send Message</button>*@
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="groupsms-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-envelope-o"></i>&nbsp;Group SMS</h4>
+                </div>
+                <form action="@Url.Action("GroupSms", "Messages")" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">To</span>
+                                @Html.DropDownList("GroupId", null, null, new { @class = "form-control" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <textarea name="msgBody" class="form-control" ng-trim="false" ng-model="group_message" maxlength="160" placeholder="Message" style="height: 120px; font-size: 15px"></textarea>
+                            <div class="box-footer">
+                                <h4 class="label label-danger">{{160-group_message.length}}</h4>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="submit" class="btn btn-primary" ng-disabled="group_message.length==0"><i class="fa fa-envelope"></i>&nbsp;Send Message</button>
+                        <button type="button" class="btn btn-danger pull-right" data-dismiss="modal"><i class="fa fa-times"></i>&nbsp;Discard</button>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade in" id="broadcast-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title"><i class="fa fa-envelope-o"></i>&nbsp;Broadcast a message</h4>
+                    <div class="alert alert-danger">CAUTION: A total of <b>@ViewBag.Subscribers</b> contacts will receive this message.</div>
+                </div>
+                <form action="@Url.Action("Broadcast", "Messages")" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <textarea name="msgBody" class="form-control" ng-trim="false" ng-model="broadcast_message" maxlength="160" placeholder="Message" style="height: 120px; font-size: 15px"></textarea>
+                            <div class="box-footer">
+                                <h4 class="label label-danger">{{160-broadcast_message.length}}</h4>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i>&nbsp;Discard</button>
+                        <button type="submit" class="btn btn-primary pull-left" ng-disabled="broadcast_message.length==0"><i class="fa fa-envelope"></i>&nbsp;Broadcast Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- /.modal -->
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#incoming').DataTable({
+            stateSave: true
+        });
+        $('#outgoing').DataTable({
+            stateSave: true
+        });
+        $('#resolve').DataTable({
+            stateSave: true
+        });
+        $('#grouped').DataTable({
+            stateSave: true
+        });
+    });
+</script>
+
+<script type="text/javascript">
+
+    $(function () {
+        $(".checkBoxContainer").slimscroll({
+            height: "150px",
+            alwaysVisible: false,
+            size: "8px"
+        }).css("width", "100%");
+
+        switch ('@ViewBag.Active') {
+            case '1':
+                $("#inbox_tab").addClass("active");
+                $("#inbox").addClass("active");
+                break;
+            case '2':
+                $("#outbox_tab").addClass("active");
+                $("#sent").addClass("active");
+                break;
+            case '3':
+                $("#resolution_tab").addClass("active");
+                $("#resolution").addClass("active");
+                break;
+                break;
+            case '4':
+                $("#groupedmessages_tab").addClass("active");
+                $("#groupedmessages").addClass("active");
+                break;
+            default:
+                $("#inbox_tab").addClass("active");
+                $("#inbox").addClass("active");
+        }
+
+
+        //iCheck for checkbox and radio inputs
+        $('input[type="checkbox"]').iCheck({
+            checkboxClass: 'icheckbox_minimal',
+            radioClass: 'icheckbox_minimal'
+        });
+
+        //When unchecking the checkbox
+        $("#check-all").on('ifUnchecked', function (event) {
+            //Uncheck all checkboxes
+            $("input[type='checkbox']", ".table-mailbox").iCheck("uncheck");
+        });
+        //When checking the checkbox
+        $("#check-all").on('ifChecked', function (event) {
+            //Check all checkboxes
+            $("input[type='checkbox']", ".table-mailbox").iCheck("check");
+        });
+    });
+
+</script>
+
+<script>
+
+    var myApp = angular.module('myApp', ['multi-select']);
+
+    myApp.controller('msgController', [
+        '$scope', '$http', '$timeout', function ($scope, $http, $timeout) {
+
+            $scope.contacts = [];
+            $scope.selectedcontacts = [];
+            $scope.groupedmessages = [];
+
+            $scope.reset = function () {
+                $scope.email_message = "";
+                $scope.group_message = "";
+                $scope.broadcast_message = "";
+            }
+
+            $scope.reset();
+
+            $scope.getGroupedMessages = function () {
+                $http.post("@Url.Action("GetGroupedMessages", "Messages")").success(function (data) {
+                    $scope.groupedmessages = data;
+                });
+            }
+
+
+            $scope.getContacts = function () {
+                $http.post("@Url.Action("GetAllContacts", "Data")").success(function (data) {
+                    $scope.contacts = data;
+                });
+            }
+
+            $scope.getGroupedMessages();
+            $scope.getContacts();
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "progressBar": false,
+                "positionClass": "toast-bottom-right",
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+            $scope.SelectedCount = 0;
+
+            $scope.getSelected = function () {
+                angular.forEach($scope.contacts, function (value, key) {
+                    if (value.Selected == true) {
+                        // s = s + value.Name + " id:" + value.ID + "\r\n";
+                        //$scope.selectedcontacts.push(value);
+                        $scope.SelectedCount++;
+                    }
+                });
+            }
+
+            $scope.submitForm = function (isValid) {
+
+                // check to make sure the form is completely valid
+                if (isValid) {
+                    //var s = "";
+
+                    angular.forEach($scope.contacts, function (value, key) {
+                        if (value.Selected == true) {
+                            // s = s + value.Name + " id:" + value.ID + "\r\n";
+                            $scope.selectedcontacts.push(value);
+                        }
+                    });
+
+                    //alert($scope.email_message);
+                    //toastr.success($scope.selectedcontacts.Name);
+                    //toastr.success('Thank you for requesting.<br/> We will get back to you soon.');
+                    if ($scope.selectedcontacts.length > 0) {
+                        $http.post("@Url.Action("Send", "Data")", { selectedcontacts: $scope.selectedcontacts, msg: $scope.email_message }).success(function () {
+                            toastr.success('Your messages is queued to be sent for ' + $scope.selectedcontacts.length + ' people.');
+                            $('#compose-modal').modal('hide');
+                            $scope.SelectedCount = 0;
+                            window.location = "@Url.Action("Index", "Messages", new {activetab = 2})";
+                            //ocation.path().search('activetab':'2');
+                            //$scope.registerForm.$pristine = true;
+                            //$scope.registerForm.$submitted = false;
+                            //$scope.registerForm.$setPristine(true);
+
+                        }).error(function () {
+                            toastr.error("An error occured, try again!");
+                        });
+                    } else {
+                        toastr.info("You need to select recipents first");
+                    }
+
+                }
+            };
+
+            $scope.delete_msg = function ($event, item) {
+                var table = $('#incoming').DataTable();
+                var cur = $(event.target).parent().parent();
+                bootbox.dialog({
+                    message: "Are you sure you want delete this message?",
+                    title: "Confirm to delete",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("DeleteLog", "Messages")", { id: item }).success(function () {
+                                    table.row(cur).remove().draw();
+                                    var value = $("#inbox_val").text();
+                                    //var update = (parseInt(value) - 1).toString();
+                                    $('#inbox_val').text(table.data().length);
+                                });
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+
+            $scope.delete_resl = function ($event, item) {
+
+                var table = $('#resolve').DataTable();
+                var cur = $(event.target).parent().parent();
+
+                bootbox.dialog({
+                    message: "Are you sure you want delete this?",
+                    title: "Confirm to delete",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("Delete", "Resolution")", { id: item }).success(function () {
+                                    table.row(cur).remove().draw();
+                                    var value = $("#resol_val").text();
+                                    //var update = (parseInt(value) - 1).toString();
+                                    $('#resol_val').text(table.data().length);
+                                    //$("#resol_val").text(update);
+                                }).error(function () {
+                                    toastr.error("ERROR");
+                                }
+                                );
+
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+
+            $scope.delete_grmsg = function ($event, item) {
+
+                var table = $('#grouped').DataTable();
+                var cur = $(event.target).parent().parent();
+
+                bootbox.dialog({
+                    message: "Are you sure you want delete this grouped message?",
+                    title: "Confirm to delete",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("DeleteGroupedMessage", "Messages")", { id: item }).success(function () {
+                                    table.row(cur).remove().draw();
+                                    //var value = $("#resol_val").text();
+                                    //var update = (parseInt(value) - 1).toString();
+                                    //$("#resol_val").text(update);
+                                    $('#grmsg_val').text(table.data().length);
+                                }).error(function () {
+                                    toastr.error("ERROR");
+                                }
+                                );
+
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+
+            $scope.delete_msg_out = function ($event, item) {
+                var table = $('#outgoing').DataTable();
+                var cur = $(event.target).parent().parent();
+
+                bootbox.dialog({
+                    message: "Are you sure you want delete this message?",
+                    title: "Confirm to delete",
+                    buttons: {
+                        danger: {
+                            label: "Delete",
+                            className: "btn-danger",
+                            callback: function () {
+                                $http.post("@Url.Action("DeleteOut", "Messages")", { id: item }).success(function () {
+                                    table.row(cur).remove().draw();
+                                    var value = $("#outbox_val").text();
+                                    var update = (parseInt(value) - 1).toString();
+                                    $("#outbox_val").text(update);
+                                });
+
+                            }
+                        },
+                        main: {
+                            label: "Cancel",
+                            className: "btn-default",
+                            callback: function () {
+                                //Example.show("Primary button");
+                            }
+                        }
+                    }
+                });
+            };
+
+            //$timeout(function () {
+            //    //$('#grouped').DataTable({
+            //    //    stateSave: true,
+            //    //    // "ajax": '/Messages/GetGroupedMessages'
+            //    //});
+            //}, 0, false);
+        }]);
+</script>
