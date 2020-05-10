@@ -10,8 +10,8 @@ The web interface:
 2. Run the script found inside 'resources'/database_script.sql on this database
 3. Update the connection string inside the web.confing file found inside the folder 'Web'. 
 4. The first time you open the project inside visual sudio, dependecies will be downloaded from the cloud so be connected to the internet.
-4. Set the web as a startup project and launch it from with in Visual studio.
-5. Use the following user: 
+5. Set the web as a startup project and launch it from with in Visual studio.
+6. Use the following user: 
    username: admin
    password: churchsms
    
