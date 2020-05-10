@@ -3,3 +3,4 @@ Models/bin/
 Web/bin/
 Web/obj/
 packages/
+*.suo
